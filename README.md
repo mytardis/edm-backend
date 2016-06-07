@@ -1,4 +1,6 @@
-# EdmBackend
+# EDM Backend
+
+[![Build Status](https://semaphoreci.com/api/v1/mytardis/edm-backend/branches/master/badge.svg)](https://semaphoreci.com/mytardis/edm-backend)
 
 To start your Phoenix app:
 
