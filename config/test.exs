@@ -15,5 +15,5 @@ config :edm_backend, EdmBackend.Repo,
   username: "postgres",
   password: "postgres",
   database: "edm_backend_test",
-  hostname: "localhost",
+  hostname: "db",
   pool: Ecto.Adapters.SQL.Sandbox
