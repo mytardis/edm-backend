@@ -1,9 +1,7 @@
 use Mix.Config
 
-secret_key = System.get_env("secret_key")
-if is_nil(secret_key) do
-  raise "You must set a \"secret_key\" environment variable!"
-end
+secret_key = System.get_env("secret_key") ||
+    raise "You must set a \"secret_key\" environment variable!"
 
 config :edm_backend, EdmBackend.Endpoint,
   secret_key_base: secret_key
