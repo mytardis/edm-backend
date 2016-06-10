@@ -39,5 +39,5 @@ config :edm_backend, EdmBackend.Repo,
   username: "postgres",
   password: "postgres",
   database: "edm_backend_dev",
-  hostname: "localhost",
+  hostname: "db",
   pool_size: 10

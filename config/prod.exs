@@ -60,6 +60,6 @@ config :logger, level: :info
 #
 #     config :edm_backend, EdmBackend.Endpoint, root: "."
 
-# Finally import the config/prod.secret.exs
-# which should be versioned separately.
-import_config "prod.secret.exs"
+# Finally import the env_config.exs file, which uses the
+# environment to get the database configuration and secret key
+import_config "env_config.exs"
