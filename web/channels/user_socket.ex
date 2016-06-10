@@ -2,7 +2,7 @@ defmodule EdmBackend.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", EdmBackend.RoomChannel
+  # channel "room:*", EdmBackend.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket

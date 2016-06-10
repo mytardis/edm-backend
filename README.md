@@ -1,6 +1,4 @@
-# EDM Backend
-
-[![Build Status](https://semaphoreci.com/api/v1/mytardis/edm-backend/branches/master/badge.svg)](https://semaphoreci.com/mytardis/edm-backend)
+# EdmBackend
 
 To start your Phoenix app:
 
@@ -17,6 +15,6 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 
   * Official website: http://www.phoenixframework.org/
   * Guides: http://phoenixframework.org/docs/overview
-  * Docs: http://hexdocs.pm/phoenix
+  * Docs: https://hexdocs.pm/phoenix
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
