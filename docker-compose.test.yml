@@ -7,7 +7,7 @@ services:
   web:
     build: .
     # working_dir: /code
-    command: bash -c 'mix test 1>&1'
+    command: bash test.sh
     # volumes:
     #   - .:/code
     ports:

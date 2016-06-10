@@ -10,6 +10,5 @@ RUN mix deps.get
 RUN mix deps.compile
 RUN mix compile
 RUN npm install
-#CMD mix phoenix.server
+CMD mix phoenix.server
 #CMD mix run
-CMD bash

@@ -1,6 +1,7 @@
 # EDM Backend
 
 [![Build Status](https://semaphoreci.com/api/v1/mytardis/edm-backend/branches/master/badge.svg)](https://semaphoreci.com/mytardis/edm-backend)
+[![Coverage Status](https://coveralls.io/repos/github/mytardis/edm-backend/badge.svg?branch=master)](https://coveralls.io/github/mytardis/edm-backend?branch=master)
 
 To start your Phoenix app:
 
