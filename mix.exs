@@ -40,7 +40,13 @@ defmodule EdmBackend.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:cowboy, "~> 1.0"},
-     {:excoveralls, "~> 0.5", only: :test}]
+     {:excoveralls, "~> 0.5", only: :test},
+
+     # These packages are required for JWT signing
+     {:joken, "~> 1.1"},
+     {:libsodium, "~> 0.0.3"},
+     {:keccakf1600, "~> 0.0.1"},
+     {:libdecaf, "~> 0.0.1"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
