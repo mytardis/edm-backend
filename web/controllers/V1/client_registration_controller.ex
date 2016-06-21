@@ -1,28 +1,39 @@
+@doc """
+Manages client registration requests
+"""
 defmodule EdmBackend.V1.ClientRegistrationController do
   use EdmBackend.Web, :controller
   alias EdmBackend.Client
+  import EdmBackend.TokenSigner
+  require Logger
 
-  plug :put_view, EdmBackend.V1.ApiView
+  plug Joken.Plug, [verify: &EdmBackend.V1.ClientRegistrationController.verify_uploader_token/0] when not action in [:create]
 
-  #def get_token(conn, params) do
-  #    Logger.debug inspect(conn)
-  #    claims = %{"uuid" => params["uuid"],
-  #      "remote_ip" => conn.assigns[:remote_ip]}
-  #    token = claims |> token() |> with_signer(get_signer) |> sign() |>
-  #    get_compact()
-  #    conn |> assign(:token, token) |> render "token.json"
-  #end
+  @doc """
+  Requires that the uploader is registered for all functions except `create/2`
+  """
+  def verify_uploader_token() do
+    %Joken.Token{} |> require_claims(role: "uploader")
+  end
 
+  @doc """
+  Registers an uploader, issuing a signed token locked to the client's UUID
+  and IP address
+  """
   def create(conn, %{"uuid" => uuid}) do
     new_client = %{uuid: uuid, ip_address: conn.assigns[:remote_ip]}
 
     changeset = Client.changeset(%Client{}, new_client)
+
     case Repo.insert(changeset) do
       {:ok, client} ->
-        conn |> send_resp(201, "")
+        conn |> add_token(client) |> render("create.json")
       {:error, changeset} ->
-        render(conn, "error.json", changeset: changeset)
+        render(conn, EdmBackend.ChangesetView, "error.json", changeset: changeset)
     end
+  end
 
+  def index(conn, _params) do
+    render conn, "index.json"
   end
 end

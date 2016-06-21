@@ -1,3 +1,6 @@
+@doc """
+Formats the remote IP address from the `conn` struct to a string and assigns it
+"""
 defmodule EdmBackend.RemoteIp do
   import Plug.Conn
 
