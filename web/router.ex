@@ -11,6 +11,7 @@ defmodule EdmBackend.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug EdmBackend.RemoteIp
   end
 
   scope "/", EdmBackend do
@@ -20,7 +21,11 @@ defmodule EdmBackend.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", EdmBackend do
-  #   pipe_through :api
-  # end
+  scope "/api/v1/", EdmBackend do
+    pipe_through :api
+
+    resources "/client/", V1.ClientRegistrationController, only: [:create, :index]
+
+  end
+
 end
