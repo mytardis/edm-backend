@@ -1,7 +1,8 @@
-@doc """
-Formats the remote IP address from the `conn` struct to a string and assigns it
-"""
 defmodule EdmBackend.RemoteIp do
+  @moduledoc """
+  Formats the remote IP address from the `conn` struct to a string and assigns it
+  """
+
   import Plug.Conn
 
   def init(opts) do

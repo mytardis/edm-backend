@@ -1,7 +1,8 @@
-@doc """
-Manages client registration requests
-"""
 defmodule EdmBackend.V1.ClientRegistrationController do
+  @moduledoc """
+  Manages client registration requests
+  """
+
   use EdmBackend.Web, :controller
   alias EdmBackend.Client
   import EdmBackend.TokenSigner
