@@ -1,4 +1,4 @@
-defmodule EdmBackend.RemoteIp do
+defmodule EdmBackend.Plug.RemoteIp do
   @moduledoc """
   Formats the remote IP address from the `conn` struct to a string and assigns it
   """

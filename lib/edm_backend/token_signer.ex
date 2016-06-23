@@ -5,12 +5,15 @@ defmodule EdmBackend.TokenSigner do
   require Logger
 
   @doc """
-  Adds a signed token to the `conn` map
+  Adds a signed token to the `conn` struct
   """
   def add_token(conn, claims) do
     assign(conn, :token, sign_token(claims))
   end
 
+  @doc """
+  Signs a token for a `Client`. Defaults to the :uploader role.
+  """
   def sign_token(%Client{uuid: uuid, ip_address: ip_address}) do
     sign_token(%{uuid: uuid, ip_address: ip_address}, :uploader)
   end
@@ -39,22 +42,6 @@ defmodule EdmBackend.TokenSigner do
   """
   def get_signer() do
     hs256(Application.get_env(:edm_backend, EdmBackend.Endpoint)[:secret_key_base])
-  end
-
-  @doc """
-  Constructs a Joken claims struct that can be used with the `Joken.Plug`
-  validation function.
-  """
-  def require_claims(token, [{claim, value} | other_claims]) when is_atom(claim) do
-    token
-      |> Joken.with_validation(Atom.to_string(claim), &(&1 == value))
-      |> require_claims(other_claims)
-  end
-
-  def require_claims(token, []) do
-    token
-      |> Joken.with_signer(get_signer())
-      |> with_json_module(Poison)
   end
 
 end
