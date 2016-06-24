@@ -27,7 +27,7 @@ defmodule EdmBackend.Plug.TokenAuth do
 
       claims = conn.assigns[:claims] ->
         Logger.debug "Skipping JWT verification; claims already provided."
-        jwt_token = %Joken.Token{claims: claims}
+        conn
 
       true ->
         Logger.debug "Verifying JWT..."
