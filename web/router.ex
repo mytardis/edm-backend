@@ -11,7 +11,7 @@ defmodule EdmBackend.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    plug EdmBackend.RemoteIp
+    plug EdmBackend.Plug.RemoteIp
   end
 
   scope "/", EdmBackend do

@@ -8,14 +8,7 @@ defmodule EdmBackend.V1.ClientRegistrationController do
   import EdmBackend.TokenSigner
   require Logger
 
-  plug Joken.Plug, [verify: &EdmBackend.V1.ClientRegistrationController.verify_uploader_token/0] when not action in [:create]
-
-  @doc """
-  Requires that the uploader is registered for all functions except `create/2`
-  """
-  def verify_uploader_token() do
-    %Joken.Token{} |> require_claims(role: "uploader")
-  end
+  plug EdmBackend.Plug.TokenAuth, [claims: [role: "uploader"]] when not action in [:create]
 
   @doc """
   Registers an uploader, issuing a signed token locked to the client's UUID
@@ -37,4 +30,5 @@ defmodule EdmBackend.V1.ClientRegistrationController do
   def index(conn, _params) do
     render conn, "index.json"
   end
+
 end
