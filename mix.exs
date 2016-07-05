@@ -33,7 +33,7 @@ defmodule EdmBackend.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [{:phoenix, "~> 1.2.0-rc"},
-     {:phoenix_pubsub, "~> 1.0.0-rc"},
+     {:phoenix_pubsub, "~> 1.0"},
      {:phoenix_ecto, "~> 3.0-rc"},
      {:postgrex, ">= 0.11.2"},
      {:phoenix_html, "~> 2.6"},
@@ -46,7 +46,11 @@ defmodule EdmBackend.Mixfile do
      {:joken, "~> 1.1"},
      {:libsodium, "~> 0.0.3"},
      {:keccakf1600, "~> 0.0.1"},
-     {:libdecaf, "~> 0.0.1"}]
+     {:libdecaf, "~> 0.0.1"},
+
+     # OAuth support
+     {:ueberauth, "~> 0.2"},
+     {:ueberauth_google, "~> 0.2"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
