@@ -29,7 +29,9 @@ defmodule EdmBackend.Mixfile do
        :gettext,
        :phoenix_ecto,
        :postgrex,
-       :ueberauth]]
+       :oauth,
+       :ueberauth,
+       :ueberauth_google]]
   end
 
   # Specifies which paths to compile per environment.
@@ -57,7 +59,11 @@ defmodule EdmBackend.Mixfile do
      {:libdecaf, "~> 0.0.1"},
 
      # OAuth support
-     {:ueberauth, "~> 0.2"},
+     {:oauth, github: "tim/erlang-oauth"},
+     #{:ueberuath, "~> 0.2"},
+     # Use the following until https://github.com/ueberauth/ueberauth/pull/28
+     # is merged.
+     {:ueberauth, git: "https://github.com/jasonrig/ueberauth.git", branch: "trailing_slash", override: true},
      {:ueberauth_google, "~> 0.2"}]
   end
 

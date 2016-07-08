@@ -1,11 +1,5 @@
 use Mix.Config
 
-secret_key = System.get_env("secret_key") ||
-    raise "You must set a \"secret_key\" environment variable!"
-
-config :edm_backend, EdmBackend.Endpoint,
-  secret_key_base: secret_key
-
 # Configure your database
 config :edm_backend, EdmBackend.Repo,
     adapter: Ecto.Adapters.Postgres,
@@ -14,3 +8,8 @@ config :edm_backend, EdmBackend.Repo,
     password: System.get_env("db_password") || "postgres",
     database: System.get_env("db_name") || "edm_backend_prod",
     pool_size: System.get_env("db_pool_size") || 20
+
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: System.get_env("GOOGLE_CLIENT_ID"),
+  client_secret: System.get_env("GOOGLE_CLIENT_SECRET"),
+  redirect_uri: System.get_env("GOOGLE_REDIRECT_URI")
