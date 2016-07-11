@@ -15,6 +15,7 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
 
 ## Configuring Google OAuth
+### Using a secrets file
 1. Add a secrets file if it's not there already, e.g. `/config/dev.secret.exs` or `/config/prod.secret.exs`
 2. Add the client id and secret:
 
@@ -28,6 +29,12 @@ config :ueberauth, Ueberauth.Strategy.Google.OAuth,
 ```
 
 Replace the `redirect_uri` as appropriate.
+
+### Using environment variables
+Set the following environment variables, analogous to the settings above:
+  * `GOOGLE_CLIENT_ID`
+  * `GOOGLE_CLIENT_SECRET`
+  * `GOOGLE_REDIRECT_URI`
 
 ## Learn more
 
