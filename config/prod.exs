@@ -62,4 +62,9 @@ config :logger, level: :info
 
 # Finally import the env_config.exs file, which uses the
 # environment to get the database configuration and secret key
+secret_key = System.get_env("secret_key") ||
+    raise "You must set a \"secret_key\" environment variable!"
+config :edm_backend, EdmBackend.Endpoint,
+  secret_key_base: secret_key
+
 import_config "env_config.exs"

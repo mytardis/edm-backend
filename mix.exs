@@ -20,8 +20,18 @@ defmodule EdmBackend.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {EdmBackend, []},
-     applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+     applications: [
+       :phoenix,
+       :phoenix_pubsub,
+       :phoenix_html,
+       :cowboy,
+       :logger,
+       :gettext,
+       :phoenix_ecto,
+       :postgrex,
+       :oauth,
+       :ueberauth,
+       :ueberauth_google]]
   end
 
   # Specifies which paths to compile per environment.
@@ -33,7 +43,7 @@ defmodule EdmBackend.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [{:phoenix, "~> 1.2.0-rc"},
-     {:phoenix_pubsub, "~> 1.0.0-rc"},
+     {:phoenix_pubsub, "~> 1.0"},
      {:phoenix_ecto, "~> 3.0-rc"},
      {:postgrex, ">= 0.11.2"},
      {:phoenix_html, "~> 2.6"},
@@ -46,7 +56,15 @@ defmodule EdmBackend.Mixfile do
      {:joken, "~> 1.1"},
      {:libsodium, "~> 0.0.3"},
      {:keccakf1600, "~> 0.0.1"},
-     {:libdecaf, "~> 0.0.1"}]
+     {:libdecaf, "~> 0.0.1"},
+
+     # OAuth support
+     {:oauth, github: "tim/erlang-oauth"},
+     #{:ueberuath, "~> 0.2"},
+     # Use the following until https://github.com/ueberauth/ueberauth/pull/28
+     # is merged.
+     {:ueberauth, git: "https://github.com/jasonrig/ueberauth.git", branch: "trailing_slash", override: true},
+     {:ueberauth_google, "~> 0.2"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

@@ -4,6 +4,7 @@
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 use Mix.Config
+import Logger
 
 # General application configuration
 config :edm_backend,
@@ -22,6 +23,17 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :ueberauth, Ueberauth,
+  providers: [ google: { Ueberauth.Strategy.Google, [] } ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
+
+Logger.debug "Loading secrets if present"
+if File.exists?("config/#{Mix.env}.secret.exs") do
+  import_config "#{Mix.env}.secret.exs"
+  Logger.debug "Secrets loaded."
+else
+  Logger.debug "No secrets found, skipping."
+end
