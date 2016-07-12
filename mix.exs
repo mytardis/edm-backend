@@ -29,6 +29,8 @@ defmodule EdmBackend.Mixfile do
        :gettext,
        :phoenix_ecto,
        :postgrex,
+       :plug_graphql,
+       :graphql,
        :oauth,
        :ueberauth,
        :ueberauth_google]]
@@ -64,7 +66,10 @@ defmodule EdmBackend.Mixfile do
      # Use the following until https://github.com/ueberauth/ueberauth/pull/28
      # is merged.
      {:ueberauth, git: "https://github.com/jasonrig/ueberauth.git", branch: "trailing_slash", override: true},
-     {:ueberauth_google, "~> 0.2"}]
+     {:ueberauth_google, "~> 0.2"},
+
+     # GraphQL support
+     {:plug_graphql, "~> 0.3.1"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
