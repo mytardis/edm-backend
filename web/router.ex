@@ -30,10 +30,13 @@ defmodule EdmBackend.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api/v1/", EdmBackend do
+  scope "/api/v1/" do
     pipe_through :api
 
-    resources "/client/", V1.ClientRegistrationController, only: [:create, :index]
+    get "/graphql", GraphQL.Plug, schema: {TestSchema, :schema}
+    post "/graphql", GraphQL.Plug, schema: {TestSchema, :schema}
+
+    resources "/client/", EdmBackend.V1.ClientRegistrationController, only: [:create, :index]
 
   end
 

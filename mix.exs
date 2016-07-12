@@ -30,6 +30,7 @@ defmodule EdmBackend.Mixfile do
        :phoenix_ecto,
        :postgrex,
        :plug_graphql,
+       :graphql,
        :oauth,
        :ueberauth,
        :ueberauth_google]]
@@ -68,7 +69,7 @@ defmodule EdmBackend.Mixfile do
      {:ueberauth_google, "~> 0.2"},
 
      # GraphQL support
-     {:plug_graphql, "~> 0.3"}]
+     {:plug_graphql, "~> 0.3.1"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
