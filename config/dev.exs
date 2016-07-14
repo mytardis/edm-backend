@@ -14,7 +14,8 @@ config :edm_backend, EdmBackend.Endpoint,
   code_reloader: true,
   check_origin: false,
   watchers: [node: ["node_modules/brunch/bin/brunch", "watch", "--stdin",
-                    cd: Path.expand("../", __DIR__)]]
+                    cd: Path.expand("../", __DIR__)],
+             mix: ["eye_drops", cd: Path.expand("../", __DIR__)]]
 
 
 # Watch static and templates for browser reloading.
@@ -26,6 +27,17 @@ config :edm_backend, EdmBackend.Endpoint,
       ~r{web/views/.*(ex)$},
       ~r{web/templates/.*(eex)$}
     ]
+  ]
+
+# Update the graphql schema json file
+config :eye_drops,
+  tasks: [
+    %{
+      id: :graphql_update_schema,
+      name: "Update GraphQL Schema",
+      cmd: "mix graphql.gen.schema",
+      paths: ["web/graphql/*"] # path to graphql files
+    }
   ]
 
 # Do not include metadata nor timestamps in development logs

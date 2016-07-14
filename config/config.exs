@@ -26,12 +26,16 @@ config :logger, :console,
 config :ueberauth, Ueberauth,
   providers: [ google: { Ueberauth.Strategy.Google, [] } ]
 
+config :graphql_relay,
+  schema_module: TestSchema,
+  schema_json_path: "#{Path.dirname(__DIR__)}/priv/graphql"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
 
 Logger.debug "Loading secrets if present"
-if File.exists?("config/#{Mix.env}.secret.exs") do
+if File.exists?("#{Path.dirname(__DIR__)}/config/#{Mix.env}.secret.exs") do
   import_config "#{Mix.env}.secret.exs"
   Logger.debug "Secrets loaded."
 else
