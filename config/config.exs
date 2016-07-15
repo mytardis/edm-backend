@@ -27,7 +27,7 @@ config :ueberauth, Ueberauth,
   providers: [ google: { Ueberauth.Strategy.Google, [] } ]
 
 config :graphql_relay,
-  schema_module: TestSchema,
+  schema_module: EdmBackend.GraphQL.Schema,
   schema_json_path: "#{Path.dirname(__DIR__)}/priv/graphql"
 
 # Import environment specific config. This must remain at the bottom

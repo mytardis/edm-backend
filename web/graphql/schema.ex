@@ -2,7 +2,7 @@ defmodule EdmBackend.GraphQL.Schema do
   def schema do
     %GraphQL.Schema{
       query: %GraphQL.Type.ObjectType{
-        name: "Helloo",
+        name: "Hello",
         fields: %{
           greeting: %{
             type: %GraphQL.Type.String{},

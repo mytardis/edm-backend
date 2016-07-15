@@ -35,6 +35,7 @@ config :eye_drops,
     %{
       id: :graphql_update_schema,
       name: "Update GraphQL Schema",
+      run_on_start: true,
       cmd: "mix graphql.gen.schema",
       paths: ["web/graphql/*"] # path to graphql files
     }
