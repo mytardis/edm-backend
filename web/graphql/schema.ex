@@ -1,4 +1,4 @@
-defmodule TestSchema do
+defmodule EdmBackend.GraphQL.Schema do
   def schema do
     %GraphQL.Schema{
       query: %GraphQL.Type.ObjectType{
@@ -11,7 +11,7 @@ defmodule TestSchema do
                 type: %GraphQL.Type.String{}
               }
             },
-            resolve: {TestSchema, :greeting}
+            resolve: {EdmBackend.GraphQL.Schema, :greeting}
           }
         }
       }

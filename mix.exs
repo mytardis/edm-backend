@@ -69,7 +69,12 @@ defmodule EdmBackend.Mixfile do
      {:ueberauth_google, "~> 0.2"},
 
      # GraphQL support
-     {:plug_graphql, "~> 0.3.1"}]
+     {:plug_graphql, "~> 0.3.1"},
+     {:graphql_relay, "~> 0.5"},
+
+     # Watch configured tasks
+     # Used to rebuild the graphql/relay json schema
+     {:eye_drops, "~> 1.2"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
