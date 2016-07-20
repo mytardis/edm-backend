@@ -62,10 +62,7 @@ defmodule EdmBackend.Mixfile do
 
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
-     #{:ueberuath, "~> 0.2"},
-     # Use the following until https://github.com/ueberauth/ueberauth/pull/28
-     # is merged.
-     {:ueberauth, git: "https://github.com/jasonrig/ueberauth.git", branch: "trailing_slash", override: true},
+     {:ueberauth, "~> 0.3"},
      {:ueberauth_google, "~> 0.2"},
 
      # GraphQL support
