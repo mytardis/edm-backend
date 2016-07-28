@@ -56,9 +56,9 @@ defmodule EdmBackend.Mixfile do
 
      # These packages are required for JWT signing
      {:joken, "~> 1.1"},
-     {:libsodium, "~> 0.0.3"},
-     {:keccakf1600, "~> 0.0.1"},
-     {:libdecaf, "~> 0.0.1"},
+     {:libsodium, "~> 0.0.7"},
+     {:keccakf1600, "~> 2.0.0"},
+     {:libdecaf, "~> 0.0.3"},
 
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
