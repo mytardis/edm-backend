@@ -6,6 +6,11 @@
 use Mix.Config
 import Logger
 
+# Configure flasked for environment-based config
+config :flasked,
+  otp_app: :edm_backend,
+  map_file: "priv/flasked_env.exs"
+
 # General application configuration
 config :edm_backend,
   ecto_repos: [EdmBackend.Repo]
@@ -13,7 +18,6 @@ config :edm_backend,
 # Configures the endpoint
 config :edm_backend, EdmBackend.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "tafOjA8acApntV2jbrOWlcEcPIR2BCVaLz4Z9Q5UlvgMoNYvx8jj9GHUgkyTg7Uk",
   render_errors: [view: EdmBackend.ErrorView, accepts: ~w(html json)],
   pubsub: [name: EdmBackend.PubSub,
            adapter: Phoenix.PubSub.PG2]
@@ -30,14 +34,11 @@ config :graphql_relay,
   schema_module: EdmBackend.GraphQL.Schema,
   schema_json_path: "#{Path.dirname(__DIR__)}/priv/graphql"
 
+# Global database config
+config :edm_backend, EdmBackend.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  url: {:system, "DATABASE_URL"}
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
-
-Logger.debug "Loading secrets if present"
-if File.exists?("#{Path.dirname(__DIR__)}/config/#{Mix.env}.secret.exs") do
-  import_config "#{Mix.env}.secret.exs"
-  Logger.debug "Secrets loaded."
-else
-  Logger.debug "No secrets found, skipping."
-end
