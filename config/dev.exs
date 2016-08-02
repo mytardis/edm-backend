@@ -1,7 +1,5 @@
 use Mix.Config
 
-import_config "env_config.exs"
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -50,9 +48,4 @@ config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
 config :edm_backend, EdmBackend.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "edm_backend_dev",
-  hostname: System.get_env("db_host") || "localhost",
   pool_size: 10

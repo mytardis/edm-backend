@@ -11,9 +11,4 @@ config :logger, level: :warn
 
 # Configure your database
 config :edm_backend, EdmBackend.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "edm_backend_test",
-  hostname: "db",
   pool: Ecto.Adapters.SQL.Sandbox

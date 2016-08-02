@@ -21,6 +21,7 @@ defmodule EdmBackend.Mixfile do
   def application do
     [mod: {EdmBackend, []},
      applications: [
+       :flasked,
        :phoenix,
        :phoenix_pubsub,
        :phoenix_html,
@@ -68,7 +69,10 @@ defmodule EdmBackend.Mixfile do
 
      # Watch configured tasks
      # Used to rebuild the graphql/relay json schema
-     {:eye_drops, "~> 1.2"}]
+     {:eye_drops, "~> 1.2"},
+
+     # Provides environment-based configuration
+     {:flasked, "~> 0.4"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
