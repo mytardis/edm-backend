@@ -33,8 +33,8 @@ defmodule EdmBackend.Router do
   scope "/api/v1/" do
     pipe_through :api
 
-    get "/graphql", GraphQL.Plug, schema: {EdmBackend.GraphQL.Schema, :schema}
-    post "/graphql", GraphQL.Plug, schema: {EdmBackend.GraphQL.Schema, :schema}
+    get "/graphql", GraphQL.Plug, schema: {EdmBackend.GraphQL.Schema.Root, :schema}
+    post "/graphql", GraphQL.Plug, schema: {EdmBackend.GraphQL.Schema.Root, :schema}
 
     resources "/client/", EdmBackend.V1.ClientRegistrationController, only: [:create, :index]
 
