@@ -66,6 +66,7 @@ defmodule EdmBackend.Mixfile do
      # GraphQL support
      {:plug_graphql, "~> 0.3.1"},
      {:graphql_relay, "~> 0.5"},
+     {:cors_plug, "~> 1.1"}, # Needed for cross-site access
 
      # Watch configured tasks
      # Used to rebuild the graphql/relay json schema

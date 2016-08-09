@@ -38,5 +38,6 @@ defmodule EdmBackend.Endpoint do
     key: "_edm_backend_key",
     signing_salt: "cpPLkClx"
 
+  plug CORSPlug
   plug EdmBackend.Router
 end
