@@ -31,7 +31,7 @@ config :ueberauth, Ueberauth,
   providers: [ google: { Ueberauth.Strategy.Google, [] } ]
 
 config :graphql_relay,
-  schema_module: EdmBackend.GraphQL.Schema,
+  schema_module: EdmBackend.GraphQL.Schema.Root,
   schema_json_path: "#{Path.dirname(__DIR__)}/priv/graphql"
 
 # Global database config
