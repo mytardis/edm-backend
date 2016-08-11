@@ -4,6 +4,7 @@ defmodule EdmBackend.Facility do
   schema "facilities" do
     field :name, :string
     has_many :clients, EdmBackend.Client
+    has_many :configuration_groups, EdmBackend.ConfigurationGroup
     timestamps
   end
 

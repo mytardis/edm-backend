@@ -39,9 +39,20 @@ defmodule EdmBackend.GraphQL.Schema.Root do
     }
   end
 
+  #def mutation do
+  #  %ObjectType{
+  #    name: "Mutation",
+  #    description: "Root object for performing data mutations",
+  #    fields: %{
+  #      addNewClient:
+  #    }
+  #  }
+  #end
+
   def schema do
     %Schema{
       query: query
+      #mutation: mutation
     }
   end
 end

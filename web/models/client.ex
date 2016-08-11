@@ -1,12 +1,11 @@
 defmodule EdmBackend.Client do
   use EdmBackend.Web, :model
-  require Logger
 
   schema "clients" do
     field :uuid, :string
     field :ip_address, :string
     field :nickname, :string
-    belongs_to :facility, EdmBackend.Facility
+    belongs_to :configuration_group, EdmBackend.ConfigurationGroup
     timestamps
   end
 
