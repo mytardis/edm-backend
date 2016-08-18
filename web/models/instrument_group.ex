@@ -17,6 +17,6 @@ defmodule EdmBackend.InstrumentGroup do
     model |> cast(params, @allowed)
           |> validate_required(@required)
           |> cast_assoc(:facility, required: true)
-          |> unique_constraint(:name, name: :configuration_groups_name_facility_id_index)
+          |> unique_constraint(:name, name: :instrument_groups_name_facility_id_index)
   end
 end
