@@ -4,14 +4,17 @@ defmodule EdmBackend.Facility do
   schema "facilities" do
     field :name, :string
     has_many :clients, EdmBackend.Client
-    has_many :configuration_groups, EdmBackend.ConfigurationGroup
+    has_many :instrument_groups, EdmBackend.InstrumentGroup
     timestamps
   end
 
-  @required_fields ~w(name)
+  @allowed ~w(name)a
+  @required ~w(name)a
 
-  def changeset(model, params \\ :empty) do
-    model |> cast(params, @required_fields, [])
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> validate_required(@required)
+          |> unique_constraint(:name)
   end
 
 end

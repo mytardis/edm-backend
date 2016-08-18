@@ -7,6 +7,6 @@ defmodule EdmBackend.Repo.Migrations.Users do
       add :email, :string, size: 255
       timestamps
     end
-    create unique_index(:users, [:name, :email])
+    create unique_index(:users, [:email])
   end
 end
