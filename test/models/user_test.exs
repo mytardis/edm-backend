@@ -82,7 +82,7 @@ defmodule EdmBackend.UserModelTest do
     all_group_membership_flat = user |> User.all_groups_flat
     all_group_membership = user |> User.all_groups
 
-    assert MapSet.size(all_group_membership_flat) == 4
+    assert length(all_group_membership_flat) == 4
     assert length(all_group_membership) == 2
 
     refute user |> User.member_of?(empty_group)

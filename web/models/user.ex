@@ -5,7 +5,6 @@ defmodule EdmBackend.User do
 
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
-  alias EdmBackend.User
   alias EdmBackend.Group
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
@@ -31,7 +30,7 @@ defmodule EdmBackend.User do
   @doc """
   Generates a flattened list of groups that a user belongs to
   """
-  def all_groups_flat(%User{} = user) do
+  def all_groups_flat(user) do
     %{groups: groups} = user |> Repo.preload(:groups)
 
     groups = groups |> Enum.map(fn(g) ->
@@ -40,17 +39,17 @@ defmodule EdmBackend.User do
 
     all_groups_flat groups, %MapSet{}
   end
-  
+
   defp all_groups_flat([%Group{parent: parent} = head|tail], accumulator) when is_nil(parent) do
     all_groups_flat(tail, accumulator |> MapSet.put(head))
   end
 
-  defp all_groups_flat([%Group{parent: parent} = head|tail], accumulator) do
+  defp all_groups_flat([head|tail], accumulator) do
     all_groups_flat(tail ++ [head.parent], accumulator |> MapSet.put(head))
   end
 
   defp all_groups_flat([], accumulator) do
-    accumulator
+    accumulator |> MapSet.to_list
   end
 
   @doc """
@@ -68,28 +67,28 @@ defmodule EdmBackend.User do
   @doc """
   Determines whether the given user is a member of the specified group
   """
-  def member_of?(user = %User{}, %Group{} = group) do
-    user |> member_of?(group.id)
+  def member_of?(user, %Group{id: gid}) do
+    user |> member_of?(gid)
   end
 
-  def member_of?(user = %User{}, gid) when is_integer(gid) do
-    user |> all_groups |> member_of?(gid)
-  end
-
-  def member_of?([%Group{id: gid}|tail], target_gid) when gid == target_gid do
-    true
-  end
-
-  def member_of?([%Group{parent: parent}=head|tail], target_gid) when is_nil(parent) do
+  def member_of?([%Group{parent: parent}|tail], target_gid) when is_nil(parent) do
     member_of? tail, target_gid
+  end
+
+  def member_of?([], _target_gid) do
+    false
+  end
+
+  def member_of?([%Group{id: gid}|_tail], target_gid) when gid == target_gid do
+    true
   end
 
   def member_of?([head|tail], target_gid) do
     member_of? tail ++ [head.parent], target_gid
   end
 
-  def member_of?([], target_gid) do
-    false
+  def member_of?(user, gid) when is_integer(gid) do
+    user |> all_groups |> member_of?(gid)
   end
 
 end
