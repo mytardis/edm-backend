@@ -1,9 +1,14 @@
 defmodule EdmBackend.GroupMembership do
+  @moduledoc """
+  This is the many-to-many relationship model linking users to groups
+  """
   use EdmBackend.Web, :model
+  alias EdmBackend.User
+  alias EdmBackend.Group
 
   schema "group_memberships" do
-    belongs_to :user, EdmBackend.User
-    belongs_to :group, EdmBackend.Group
+    belongs_to :user, User
+    belongs_to :group, Group
     timestamps
   end
 

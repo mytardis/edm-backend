@@ -1,11 +1,16 @@
 defmodule EdmBackend.Client do
+  @moduledoc """
+  Represents a client instrument, uniquely defined by its UUID
+  """
+
   use EdmBackend.Web, :model
+  alias EdmBackend.InstrumentGroup
 
   schema "clients" do
     field :uuid, :string
     field :ip_address, :string
     field :nickname, :string
-    belongs_to :instrument_group, EdmBackend.InstrumentGroup
+    belongs_to :instrument_group, InstrumentGroup
     timestamps
   end
 

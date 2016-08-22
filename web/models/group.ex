@@ -1,14 +1,19 @@
 defmodule EdmBackend.Group do
+  @moduledoc """
+  Represents user groups, and group hierarchies
+  """
+
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
   alias EdmBackend.Group
+  alias EdmBackend.GroupMembership
 
   schema "groups" do
     field :name, :string
     field :description, :string
     has_many :children, Group, foreign_key: :parent_id
     belongs_to :parent, Group, foreign_key: :parent_id
-    has_many :group_memberships, EdmBackend.GroupMembership
+    has_many :group_memberships, GroupMembership
     timestamps
   end
 

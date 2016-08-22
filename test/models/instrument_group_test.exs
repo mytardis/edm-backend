@@ -4,40 +4,43 @@ defmodule EdmBackend.InstrumentGroupModelTest do
   alias EdmBackend.InstrumentGroup
 
   test "valid instrument group values" do
-    facility = %Facility{
+    facility = %Facility{} |> Facility.changeset(%{
       name: "test facility"
-    } |> Facility.changeset
+    })
 
     {:ok, facility} = Repo.insert facility
 
     instrument_group = %InstrumentGroup{
-      name: "A config group",
-      configuration_blob: "{some: 'config'}",
       facility: facility
-    } |> InstrumentGroup.changeset
+    } |> InstrumentGroup.changeset(%{
+      name: "A config group",
+      configuration_blob: "{some: 'config'}"
+    })
 
     assert instrument_group.valid?
   end
 
   test "invalid instrument group values" do
-    facility = %Facility{
+    facility = %Facility{} |> Facility.changeset(%{
       name: "test facility"
-    } |> Facility.changeset
+    })
 
     {:ok, facility} = Repo.insert facility
 
-    instrument_group1 = %InstrumentGroup{
-      configuration_blob: "{some: 'config'}",
-      facility: facility
-    } |> InstrumentGroup.changeset
-    instrument_group2 = %InstrumentGroup{
-      name: "A config group",
-      facility: facility
-    } |> InstrumentGroup.changeset
-    instrument_group3 = %InstrumentGroup{
+    instrument_group1 = %InstrumentGroup{} |> InstrumentGroup.changeset(%{
       name: "A config group",
       configuration_blob: "{some: 'config'}"
-    } |> InstrumentGroup.changeset
+    })
+    instrument_group2 = %InstrumentGroup{
+      facility: facility
+    } |> InstrumentGroup.changeset(%{
+      configuration_blob: "{some: 'config'}"
+    })
+    instrument_group3 = %InstrumentGroup{
+      facility: facility
+    } |> InstrumentGroup.changeset(%{
+      name: "A config group"
+    })
 
     refute instrument_group1.valid?
     refute instrument_group2.valid?
@@ -56,40 +59,46 @@ defmodule EdmBackend.InstrumentGroupModelTest do
     {:ok, facility2} = Repo.insert facility2
 
     instrument_group1a = %InstrumentGroup{
-      name: "A config group",
-      configuration_blob: "{some: 'config'}",
       facility: facility1
-    } |> InstrumentGroup.changeset
+    } |> InstrumentGroup.changeset(%{
+      name: "A config group",
+      configuration_blob: "{some: 'config'}"
+    })
     instrument_group2a = %InstrumentGroup{
+      facility: facility1
+    } |> InstrumentGroup.changeset(%{
       name: "A config group",
-      configuration_blob: "{some: 'config'}",
-      facility: facility1
-    } |> InstrumentGroup.changeset
+      configuration_blob: "{some: 'config'}"
+    })
     instrument_group3a = %InstrumentGroup{
-      name: "Another config group",
-      configuration_blob: "{some: 'config'}",
       facility: facility1
-    } |> InstrumentGroup.changeset
+    } |> InstrumentGroup.changeset(%{
+      name: "Another config group",
+      configuration_blob: "{some: 'config'}"
+    })
 
     assert {:ok, _changeset} = Repo.insert instrument_group1a
     assert {:error, _changeset} = Repo.insert instrument_group2a
     assert {:ok, _changeset} = Repo.insert instrument_group3a
 
     instrument_group1b = %InstrumentGroup{
-      name: "A config group",
-      configuration_blob: "{some: 'config'}",
       facility: facility2
-    } |> InstrumentGroup.changeset
+    } |> InstrumentGroup.changeset(%{
+      name: "A config group",
+      configuration_blob: "{some: 'config'}"
+    })
     instrument_group2b = %InstrumentGroup{
+      facility: facility2
+    } |> InstrumentGroup.changeset(%{
       name: "A config group",
-      configuration_blob: "{some: 'config'}",
-      facility: facility2
-    } |> InstrumentGroup.changeset
+      configuration_blob: "{some: 'config'}"
+    })
     instrument_group3b = %InstrumentGroup{
-      name: "Another config group",
-      configuration_blob: "{some: 'config'}",
       facility: facility2
-    } |> InstrumentGroup.changeset
+    } |> InstrumentGroup.changeset(%{
+      name: "Another config group",
+      configuration_blob: "{some: 'config'}"
+    })
 
     assert {:ok, _changeset} = Repo.insert instrument_group1b
     assert {:error, _changeset} = Repo.insert instrument_group2b

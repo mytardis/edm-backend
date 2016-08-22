@@ -3,9 +3,9 @@ defmodule EdmBackend.FacilityModelTest do
   alias EdmBackend.Facility
 
   test "valid facility values" do
-    facility = %Facility{
+    facility = %Facility{} |> Facility.changeset(%{
       name: "test facility"
-    } |> Facility.changeset
+    })
     assert facility.valid?
   end
 
@@ -15,15 +15,15 @@ defmodule EdmBackend.FacilityModelTest do
   end
 
   test "facility uniqueness" do
-    facility1 = %Facility{
+    facility1 = %Facility{} |> Facility.changeset(%{
       name: "test facility"
-    } |> Facility.changeset
-    facility2 = %Facility{
+    })
+    facility2 = %Facility{} |> Facility.changeset(%{
       name: "test facility"
-    } |> Facility.changeset
-    facility3 = %Facility{
+    })
+    facility3 = %Facility{} |> Facility.changeset(%{
       name: "another test facility"
-    } |> Facility.changeset
+    })
 
     assert {:ok, _changeset} = Repo.insert facility1
     assert {:error, _changeset} = Repo.insert facility2

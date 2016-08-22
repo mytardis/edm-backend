@@ -3,18 +3,18 @@ defmodule EdmBackend.GroupModelTest do
   alias EdmBackend.Group
 
   test "valid group values" do
-    group = %Group{
+    group = %Group{} |> Group.changeset(%{
       name: "a group",
       description: "a group description"
-    } |> Group.changeset
+    })
 
     assert group.valid?
   end
 
   test "invalid group values" do
     group1 = %Group{} |> Group.changeset
-    group2 = %Group{name: "a group"} |> Group.changeset
-    group3 = %Group{description: "a group description"} |> Group.changeset
+    group2 = %Group{} |> Group.changeset(%{name: "a group"})
+    group3 = %Group{} |> Group.changeset(%{description: "a group description"})
 
     refute group1.valid?
     refute group2.valid?
@@ -24,59 +24,65 @@ defmodule EdmBackend.GroupModelTest do
   test "group uniqueness" do
 
     # Test top-level groups
-    group1 = %Group{
+    group1 = %Group{} |> Group.changeset(%{
       name: "A",
       description: "_"
-    } |> Group.changeset
-    group2 = %Group{
+    })
+    group2 = %Group{} |> Group.changeset(%{
       name: "A",
       description: "_"
-    } |> Group.changeset
-    group3 = %Group{
+    })
+    group3 = %Group{} |> Group.changeset(%{
       name: "B",
       description: "_"
-    } |> Group.changeset
+    })
 
     assert {:ok, group1} = Repo.insert group1
-    assert {:error, group2} = Repo.insert group2
+    assert {:error, _group2} = Repo.insert group2
     assert {:ok, group3} = Repo.insert group3
 
     # Test sub-groups
     sub_group1a = %Group{
-      name: "A",
-      description: "_",
       parent: group1
-    } |> Group.changeset
+    } |> Group.changeset(%{
+      name: "A",
+      description: "_"
+    })
     sub_group2a = %Group{
+      parent: group1
+    } |> Group.changeset(%{
       name: "A",
-      description: "_",
-      parent: group1
-    } |> Group.changeset
+      description: "_"
+    })
     sub_group3a = %Group{
-      name: "B",
-      description: "_",
       parent: group1
-    } |> Group.changeset
+    } |> Group.changeset(%{
+      name: "B",
+      description: "_"
+    })
 
     assert {:ok, _changeset} = Repo.insert sub_group1a
     assert {:error, _changeset} = Repo.insert sub_group2a
     assert {:ok, _changeset} = Repo.insert sub_group3a
 
     sub_group1b = %Group{
-      name: "A",
-      description: "_",
       parent: group3
-    } |> Group.changeset
+    } |> Group.changeset(%{
+      name: "A",
+      description: "_"
+    })
     sub_group2b = %Group{
+      parent: group3
+    } |> Group.changeset(%{
       name: "A",
-      description: "_",
-      parent: group3
-    } |> Group.changeset
+      description: "_"
+    })
     sub_group3b = %Group{
-      name: "B",
-      description: "_",
       parent: group3
-    } |> Group.changeset
+    } |> Group.changeset(%{
+      name: "B",
+      description: "_"
+    })
 
     assert {:ok, _changeset} = Repo.insert sub_group1b
     assert {:error, _changeset} = Repo.insert sub_group2b
@@ -85,18 +91,19 @@ defmodule EdmBackend.GroupModelTest do
   end
 
   test "group hierarchy" do
-    parent_group = %Group{
+    parent_group = %Group{} |> Group.changeset(%{
       name: "a parent group",
       description: "a parent group description"
-    } |> Group.changeset
+    })
 
     {:ok, parent_group} = Repo.insert parent_group
 
     child_group = %Group{
-      name: "a child group",
-      description: "a sub group description",
       parent: parent_group
-    }
+    } |> Group.changeset(%{
+      name: "a child group",
+      description: "a sub group description"
+    })
 
     {:ok, child_group} = Repo.insert child_group
 

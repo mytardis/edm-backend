@@ -5,14 +5,14 @@ defmodule EdmBackend.GroupMembershipModelTest do
   alias EdmBackend.Group
 
   test "group membership validation" do
-    user = %User{
+    user = %User{} |> User.changeset(%{
       name: "someone",
       email: "someone@example.com"
-    } |> User.changeset
-    group = %Group{
+    })
+    group = %Group{} |> Group.changeset(%{
       name: "a group",
       description: "a group description"
-    } |> Group.changeset
+    })
 
     {:ok, user} = Repo.insert user
     {:ok, group} = Repo.insert group
@@ -36,18 +36,18 @@ defmodule EdmBackend.GroupMembershipModelTest do
   end
 
   test "group membership uniqueness" do
-    user = %User{
+    user = %User{} |> User.changeset(%{
       name: "someone",
       email: "someone@example.com"
-    } |> User.changeset
-    group1 = %Group{
+    })
+    group1 = %Group{} |> Group.changeset(%{
       name: "a group",
       description: "a group description"
-    } |> Group.changeset
-    group2 = %Group{
+    })
+    group2 = %Group{} |> Group.changeset(%{
       name: "another group",
       description: "a group description"
-    } |> Group.changeset
+    })
 
     {:ok, user} = Repo.insert user
     {:ok, group1} = Repo.insert group1

@@ -34,6 +34,7 @@ defmodule EdmBackend.ClientModelTest do
       uuid: "acfd51b2-0972-426a-acf1-2827f77fc97q",
       ip_address: "127.0.0.1"
     })
+    
     refute client1.valid?
     refute client2.valid?
     refute client3.valid?

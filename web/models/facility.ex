@@ -1,10 +1,16 @@
 defmodule EdmBackend.Facility do
+  @moduledoc """
+  Represents a facility, which is effectively a container for instrument groups
+  """
+
   use EdmBackend.Web, :model
+  alias EdmBackend.Client
+  alias EdmBackend.InstrumentGroup
 
   schema "facilities" do
     field :name, :string
-    has_many :clients, EdmBackend.Client
-    has_many :instrument_groups, EdmBackend.InstrumentGroup
+    has_many :clients, Client
+    has_many :instrument_groups, InstrumentGroup
     timestamps
   end
 
