@@ -34,10 +34,10 @@ defmodule EdmBackend.Plug.TokenAuth do
         jwt_token = conn
           |> get_token_from_header
           |> require_claims(required_claims)
-        if require_ip_match do
-          jwt_token = jwt_token |> require_claims([{:ip_address, conn.assigns[:remote_ip]} | required_claims])
+        jwt_token = if require_ip_match do
+          jwt_token |> require_claims([{:ip_address, conn.assigns[:remote_ip]} | required_claims])
         else
-          jwt_token = jwt_token |> require_claims(required_claims)
+          jwt_token |> require_claims(required_claims)
         end
         jwt_token = jwt_token |> verify
 
