@@ -1,6 +1,7 @@
 defmodule EdmBackend.GraphQL.Schema.Client do
   alias GraphQL.Relay.Node
   alias GraphQL.Relay.Connection
+  alias GraphQL.Relay.Mutation
   alias GraphQL.Type.ObjectType
   alias GraphQL.Type.String
   alias EdmBackend.GraphQL.Schema.Root
@@ -49,6 +50,13 @@ defmodule EdmBackend.GraphQL.Schema.Client do
       interfaces: [Root.node_interface]
     }
   end
+
+  #def new_client do
+  #  %{
+  #    name: "AddClient",
+  #    input_fields
+  #    } |> Mutation.new
+  #end
 
   def find(id) do
     EdmBackend.Client

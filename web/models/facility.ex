@@ -1,16 +1,26 @@
 defmodule EdmBackend.Facility do
+  @moduledoc """
+  Represents a facility, which is effectively a container for instrument groups
+  """
+
   use EdmBackend.Web, :model
+  alias EdmBackend.Client
+  alias EdmBackend.InstrumentGroup
 
   schema "facilities" do
     field :name, :string
-    has_many :clients, EdmBackend.Client
+    has_many :clients, Client
+    has_many :instrument_groups, InstrumentGroup
     timestamps
   end
 
-  @required_fields ~w(name)
+  @allowed ~w(name)a
+  @required ~w(name)a
 
-  def changeset(model, params \\ :empty) do
-    model |> cast(params, @required_fields, [])
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> validate_required(@required)
+          |> unique_constraint(:name)
   end
 
 end

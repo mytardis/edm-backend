@@ -6,7 +6,7 @@ defmodule EdmBackend.Repo.Migrations.AddClientsTable do
       add :uuid, :string, size: 36
       add :ip_address, :string, size: 46
       add :nickname, :string
-      add :facility_id, references(:facilities)
+      add :instrument_group_id, references(:instrument_groups)
       timestamps
     end
     create unique_index(:clients, [:uuid])
