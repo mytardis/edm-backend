@@ -27,17 +27,9 @@ config :edm_backend, EdmBackend.Endpoint,
     ]
   ]
 
-# Update the graphql schema json file
+# Eyedrops tasks
 config :eye_drops,
-  tasks: [
-    %{
-      id: :graphql_update_schema,
-      name: "Update GraphQL Schema",
-      run_on_start: true,
-      cmd: "mix graphql.gen.schema",
-      paths: ["web/graphql/*"] # path to graphql files
-    }
-  ]
+  tasks: []
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

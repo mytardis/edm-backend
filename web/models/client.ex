@@ -11,6 +11,7 @@ defmodule EdmBackend.Client do
     field :ip_address, :string
     field :nickname, :string
     belongs_to :instrument_group, InstrumentGroup
+    has_one :facility, through: [:instrument_group, :facility]
     timestamps
   end
 
@@ -20,6 +21,7 @@ defmodule EdmBackend.Client do
   def changeset(model, params \\ %{}) do
     model
       |> cast(params, @allowed)
+      |> cast_assoc(:instrument_group, required: false)
       |> validate_required(@required)
       |> validate_format(:uuid, ~r/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
       |> unique_constraint(:uuid)

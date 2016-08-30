@@ -5,7 +5,7 @@ defmodule EdmBackend.Repo.Migrations.Groups do
     create table(:groups) do
       add :name, :string, size: 50
       add :description, :string, size: 255
-      add :parent_id, references(:groups)
+      add :parent_id, references(:groups, on_delete: :delete_all)
       timestamps
     end
     create unique_index(:groups, [:name, :parent_id], where: "parent_id IS NOT NULL", name: "groups_unique_null_parent_id")
