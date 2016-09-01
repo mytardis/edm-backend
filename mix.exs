@@ -30,8 +30,8 @@ defmodule EdmBackend.Mixfile do
        :gettext,
        :phoenix_ecto,
        :postgrex,
-       :plug_graphql,
-       :graphql,
+       :absinthe_plug,
+       :absinthe_relay,
        :oauth,
        :ueberauth,
        :ueberauth_google]]
@@ -61,15 +61,15 @@ defmodule EdmBackend.Mixfile do
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
      {:ueberauth, "~> 0.3"},
-     {:ueberauth_google, "~> 0.2"},
+     {:ueberauth_google, "~> 0.3"},
 
      # GraphQL support
-     {:plug_graphql, "~> 0.3.1"},
-     {:graphql_relay, "~> 0.5"},
+     {:absinthe_plug, "~> 1.1"},
+     {:absinthe_relay, "~> 0.9.4"},
+     {:poison, "~> 2.1.0"},
      {:cors_plug, "~> 1.1"}, # Needed for cross-site access
 
      # Watch configured tasks
-     # Used to rebuild the graphql/relay json schema
      {:eye_drops, "~> 1.2"},
 
      # Provides environment-based configuration

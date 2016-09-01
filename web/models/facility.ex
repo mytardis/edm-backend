@@ -9,7 +9,6 @@ defmodule EdmBackend.Facility do
 
   schema "facilities" do
     field :name, :string
-    has_many :clients, Client
     has_many :instrument_groups, InstrumentGroup
     timestamps
   end

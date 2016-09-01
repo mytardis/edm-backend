@@ -2,7 +2,6 @@ defmodule EdmBackend.UserModelTest do
   use EdmBackend.ModelCase
   alias EdmBackend.User
   alias EdmBackend.Group
-  alias EdmBackend.GroupMembership
 
   require Logger
 
@@ -67,17 +66,8 @@ defmodule EdmBackend.UserModelTest do
     })
     {:ok, group2b} = Repo.insert group2b
 
-    group_membership1 = %GroupMembership{
-      user: user,
-      group: group2a
-    } |> GroupMembership.changeset
-    {:ok, _changeset} = Repo.insert group_membership1
-
-    group_membership2 = %GroupMembership{
-      user: user,
-      group: group2b
-    } |> GroupMembership.changeset
-    {:ok, _changeset} = Repo.insert group_membership2
+    {:ok, _changeset} = user |> User.add_to_group(group2a)
+    {:ok, _changeset} = user |> User.add_to_group(group2b)
 
     all_group_membership_flat = user |> User.all_groups_flat
     all_group_membership = user |> User.all_groups
@@ -89,6 +79,9 @@ defmodule EdmBackend.UserModelTest do
     assert user |> User.member_of?(group1)
     assert user |> User.member_of?(group2a)
     assert user |> User.member_of?(group2b)
+
+    user |> User.remove_from_group(group2a)
+    refute user |> User.member_of?(group2a)
   end
 
 end

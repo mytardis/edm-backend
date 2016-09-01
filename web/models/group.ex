@@ -7,13 +7,15 @@ defmodule EdmBackend.Group do
   alias EdmBackend.Repo
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
+  import Logger
 
   schema "groups" do
     field :name, :string
     field :description, :string
-    has_many :children, Group, foreign_key: :parent_id
+    has_many :children, Group, foreign_key: :parent_id, on_delete: :delete_all
     belongs_to :parent, Group, foreign_key: :parent_id
-    has_many :group_memberships, GroupMembership
+    has_many :group_memberships, GroupMembership, on_delete: :delete_all
+    has_many :users, through: [:group_memberships, :user]
     timestamps
   end
 
@@ -26,6 +28,23 @@ defmodule EdmBackend.Group do
           |> validate_required(@required)
           |> unique_constraint(:name, name: :groups_unique_null_parent_id)
           |> unique_constraint(:name, name: :groups_unique_not_null_parent_id)
+  end
+
+  @doc """
+  Returns a list of users who are members of this group of any of its children
+  """
+  def members(group) do
+    group = group |> load_children
+    members([group], [])
+  end
+
+  defp members([group|remaining_groups], member_list) do
+    %{users: members} = group |> Repo.preload(:users)
+    members(remaining_groups ++ group.children, member_list ++ members)
+  end
+
+  defp members([], member_list) do
+    member_list
   end
 
   # Recursive loading code from http://tensiondriven.github.io/posts/recursively-load-self-referential-association-using-ecto

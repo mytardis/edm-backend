@@ -5,9 +5,11 @@ defmodule EdmBackend.User do
 
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
+  alias EdmBackend.User
   alias EdmBackend.Group
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
+  import Ecto.Query
 
   schema "users" do
     field :name, :string
@@ -25,6 +27,24 @@ defmodule EdmBackend.User do
     model |> cast(params, @allowed)
           |> validate_required(@required)
           |> unique_constraint(:email)
+  end
+
+  @doc """
+  Adds a user to a group
+  """
+  def add_to_group(user, group) do
+    %GroupMembership{
+      user: user,
+      group: group
+    } |> GroupMembership.changeset
+      |> Repo.insert
+  end
+
+  def remove_from_group(%User{id: user_id}, %Group{id: group_id}) do
+    query = from m in GroupMembership,
+              where: m.user_id == ^user_id,
+              where: m.group_id == ^group_id
+    query |> Repo.delete_all
   end
 
   @doc """

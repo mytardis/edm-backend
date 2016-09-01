@@ -30,10 +30,6 @@ config :logger, :console,
 config :ueberauth, Ueberauth,
   providers: [ google: { Ueberauth.Strategy.Google, [] } ]
 
-config :graphql_relay,
-  schema_module: EdmBackend.GraphQL.Schema.Root,
-  schema_json_path: "#{Path.dirname(__DIR__)}/priv/graphql"
-
 # Global database config
 config :edm_backend, EdmBackend.Repo,
   adapter: Ecto.Adapters.Postgres,
