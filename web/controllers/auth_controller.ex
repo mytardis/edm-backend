@@ -1,5 +1,4 @@
 defmodule EdmBackend.AuthController do
-  import Logger
   use EdmBackend.Web, :controller
 
   plug Ueberauth
@@ -20,7 +19,6 @@ defmodule EdmBackend.AuthController do
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
     case UserFromAuth.find_or_create(auth) do
       {:ok, user} ->
-        Logger.debug inspect(user)
         conn
         |> put_flash(:info, "Successfully authenticated as " <> user.name)
         |> put_session(:current_user, user)

@@ -4,6 +4,7 @@ defmodule EdmBackend.UserFromAuth do
   """
 
   alias Ueberauth.Auth
+  import Logger
 
   def find_or_create(%Auth{provider: :identity} = auth) do
     case validate_pass(auth.credentials) do
@@ -14,6 +15,8 @@ defmodule EdmBackend.UserFromAuth do
   end
 
   def find_or_create(%Auth{} = auth) do
+    Logger.debug "This is the auth data:"
+    Logger.debug inspect(auth)
     {:ok, basic_info(auth)}
   end
 

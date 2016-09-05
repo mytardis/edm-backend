@@ -9,7 +9,6 @@
     Ueberauth.Strategy.EDM.OAuth => [
       client_id: {:flasked, :EDM_OAUTH_CLIENT_ID, :string},
       client_secret: {:flasked, :EDM_OAUTH_CLIENT_SECRET, :string},
-      redirect_uri: {:flasked, :EDM_OAUTH_REDIRECT_URI, :string},
       discovery_url: {:flasked, :EDM_OAUTH_DISCOVERY_URL, :string}
     ]
   }
