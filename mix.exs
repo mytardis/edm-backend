@@ -34,7 +34,8 @@ defmodule EdmBackend.Mixfile do
        :absinthe_relay,
        :oauth,
        :ueberauth,
-       :ueberauth_google]]
+       :ueberauth_google,
+       :ueberauth_edm]]
   end
 
   # Specifies which paths to compile per environment.
@@ -62,6 +63,7 @@ defmodule EdmBackend.Mixfile do
      {:oauth, github: "tim/erlang-oauth"},
      {:ueberauth, "~> 0.3"},
      {:ueberauth_google, "~> 0.3"},
+     {:ueberauth_edm, path: "../ueberauth_edm"},
 
      # GraphQL support
      {:absinthe_plug, "~> 1.1"},

@@ -28,7 +28,9 @@ config :logger, :console,
   metadata: [:request_id]
 
 config :ueberauth, Ueberauth,
-  providers: [ google: { Ueberauth.Strategy.Google, [] } ]
+  providers: [
+    edm_auth: { Ueberauth.Strategy.EDM, [] }
+  ]
 
 # Global database config
 config :edm_backend, EdmBackend.Repo,
