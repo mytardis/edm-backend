@@ -63,7 +63,7 @@ defmodule EdmBackend.Mixfile do
      {:oauth, github: "tim/erlang-oauth"},
      {:ueberauth, "~> 0.3"},
      {:ueberauth_google, "~> 0.3"},
-     {:ueberauth_edm, path: "../ueberauth_edm"},
+     {:ueberauth_edm, git: "https://github.com/mytardis/ueberauth_edm.git"},
 
      # GraphQL support
      {:absinthe_plug, "~> 1.1"},
