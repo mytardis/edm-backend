@@ -3,6 +3,7 @@ defmodule EdmBackend.GuardianSerialiser do
 
   alias EdmBackend.Repo
   alias EdmBackend.User
+  alias EdmBackend.Client
 
   def for_token(user = %User{}) do
     {:ok, "User:#{user.id}"}
