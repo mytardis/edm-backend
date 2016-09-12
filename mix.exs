@@ -64,6 +64,7 @@ defmodule EdmBackend.Mixfile do
      {:ueberauth, "~> 0.3"},
      {:ueberauth_google, "~> 0.3"},
      {:ueberauth_edm, git: "https://github.com/mytardis/ueberauth_edm.git"},
+     {:guardian, "~> 0.12.0"},
 
      # GraphQL support
      {:absinthe_plug, "~> 1.1"},

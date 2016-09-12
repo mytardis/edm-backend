@@ -32,6 +32,13 @@ config :ueberauth, Ueberauth,
     edm_auth: { Ueberauth.Strategy.EDM, [] }
   ]
 
+config :guardian, Guardian,
+  verify_module: Guardian.JWT,
+  issuer: "edm-backend",
+  ttl: {30, :days},
+  verify_issuer: true,
+  serializer: EdmBackend.GuardianSerialiser
+
 # Global database config
 config :edm_backend, EdmBackend.Repo,
   adapter: Ecto.Adapters.Postgres,

@@ -11,5 +11,12 @@
       client_secret: {:flasked, :EDM_OAUTH_CLIENT_SECRET, :string},
       discovery_url: {:flasked, :EDM_OAUTH_DISCOVERY_URL, :string}
     ]
+  },
+
+  guardian: %{
+    Guardian => [
+      allowed_algos: {:flasked, :GUARDIAN_ALLOWED_ALGOS, :list, ["HS512"]},
+      secret_key: {:flasked, :GUARDIAN_SECRET_KEY, :string, "tafOjA8acApntV2jbrOWlcEcPIR2BCVaLz4Z9Q5UlvgMoNYvx8jj9GHUgkyTg7Uk"}
+    ]
   }
 }

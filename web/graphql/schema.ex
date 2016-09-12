@@ -47,7 +47,7 @@ defmodule EdmBackend.GraphQL.Schema do
           Resolver.Group.find(%{id: id})
         %{type: :user, id: id}, _ ->
           Resolver.User.find(%{id: id})
-        %{type: :user_credentia, id: id}, _ ->
+        %{type: :user_credential, id: id}, _ ->
           Resolver.UserCredential.find(%{id: id})
       end
     end

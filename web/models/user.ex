@@ -10,6 +10,7 @@ defmodule EdmBackend.User do
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
   import Ecto.Query
+  import Logger
 
   schema "users" do
     field :name, :string
@@ -27,6 +28,37 @@ defmodule EdmBackend.User do
     model |> cast(params, @allowed)
           |> validate_required(@required)
           |> unique_constraint(:email)
+  end
+
+  def get_or_create(provider, user_info, extra_data \\ %{}) when is_atom(provider) do
+    get_or_create(Atom.to_string(provider), user_info, extra_data)
+  end
+
+  def get_or_create(provider, %{id: uid, name: name, email: email}, extra_data) do
+    query = from cred in UserCredential,
+              where: cred.remote_id == ^uid,
+              where: cred.auth_provider == ^provider
+    extra_data = extra_data |> Poison.encode!
+    case Repo.one(query) do
+      nil ->
+        result = Repo.transaction fn ->
+          user = %User{} |> User.changeset(%{name: name, email: email}) |> Repo.insert!
+          %UserCredential{
+            user: user
+          } |> UserCredential.changeset(%{
+            auth_provider: provider,
+            remote_id: uid,
+            extra_data: extra_data})
+          |> Repo.insert!
+          user
+        end
+        {:ok, result}
+      user_credential ->
+        user_credential = user_credential |> Repo.preload(:user)
+        user_credential |> UserCredential.changeset(%{extra_data: extra_data})
+                        |> Repo.update!
+        user_credential.user
+    end
   end
 
   @doc """
