@@ -12,15 +12,12 @@ defmodule EdmBackend.AuthController do
     [default_provider|_] = Application.get_env(:ueberauth, Ueberauth)
                               |> Keyword.get(:providers)
                               |> Keyword.keys
-    default_provider
+    default_provider |> Atom.to_string
   end
 
   def request(conn, params) do
+    params = params |> Map.put("provider", get_default_provider)
     conn |> redirect(to: auth_path(conn, :request, get_default_provider, params))
-  end
-
-  def api_request(conn, %{"provider" => nil}) do
-    conn |> redirect(to: auth_path(conn, :api_request, get_default_provider))
   end
 
   def api_request(%{query_params: %{
@@ -28,6 +25,11 @@ defmodule EdmBackend.AuthController do
       "redirect_uri" => redirect_uri,
       "response_type" => response_type
     } = query_params} = conn, params) do
+
+      provider = case params do
+        %{"provider" => p} -> p
+        _ -> get_default_provider
+      end
 
       oauth_request = %{
         client_id: client_id,
@@ -40,13 +42,17 @@ defmodule EdmBackend.AuthController do
         case validate_oauth_client(client_id, redirect_uri) do
           {:ok} ->
             conn |> put_session(:signin_oauth2, oauth_request)
-                 |> redirect(to: auth_path(conn, :request, params["provider"]))
+                 |> redirect(to: auth_path(conn, :request, provider))
           {:error, reason} ->
-            conn |> json %{error: reason}
+            conn |> json(%{error: reason})
         end
       else
-        conn |> json %{error: "Unsupported response type"}
+        conn |> json(%{error: "Unsupported response type; supported types are: " <> Enum.join(@supported_oauth_response_types, ", ")})
       end
+  end
+
+  def api_request(conn, _) do
+    conn |> json(%{error: "client_id, redirect_uri and response_type are required"})
   end
 
   def validate_oauth_client(client_id, redirect_uri) do
@@ -67,7 +73,6 @@ defmodule EdmBackend.AuthController do
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
     redirect = Map.get(params, "state", "/")
-    Logger.debug inspect(@routes)
     case UserFromAuth.find_or_create(auth) do
       {:ok, user} ->
         conn |> render_signing_success(user, redirect)
@@ -77,6 +82,7 @@ defmodule EdmBackend.AuthController do
   end
 
   defp render_signing_success(conn, user, redirect \\ "/") do
+    conn = conn |> fetch_flash
     {:ok, conn, jwt, oauth_params} = case get_session(conn, :signin_oauth2) do
       nil ->
         {:ok, conn, nil, nil}
@@ -95,7 +101,7 @@ defmodule EdmBackend.AuthController do
           |> put_flash(:info, "Logged in as #{user.name}")
           |> redirect(to: redirect)
         rescue
-          _ ->
+          ArgumentError ->
             conn |> render_signing_success(user)
         end
       %{response_type: "token"} ->
@@ -128,6 +134,18 @@ defmodule EdmBackend.AuthController do
       _ ->
         conn |> redirect(external: redirect_uri <> "&state=" <> URI.encode(state))
     end
+  end
+
+  def refresh_token(conn, _params) do
+    token = conn |> Guardian.Plug.current_token
+    case token |> Guardian.refresh! do
+      {:ok, jwt, _claims} ->
+        conn |> put_resp_header("authorization", "Bearer " <> jwt)
+             |> json(%{token: "Bearer " <> jwt})
+      _ ->
+        conn |> json(%{error: "Could not refresh the access token"})
+    end
+
   end
 
   def delete(conn, _params) do

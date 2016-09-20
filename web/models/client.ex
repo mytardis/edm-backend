@@ -16,7 +16,7 @@ defmodule EdmBackend.Client do
   end
 
   @allowed ~w(uuid ip_address nickname)a
-  @required ~w(uuid ip_address)a
+  @required ~w(uuid)a
 
   def changeset(model, params \\ %{}) do
     model

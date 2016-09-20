@@ -35,7 +35,9 @@ defmodule EdmBackend.Mixfile do
        :oauth,
        :ueberauth,
        :ueberauth_google,
-       :ueberauth_edm]]
+       :ueberauth_edm,
+       :guardian,
+       :guardian_db]]
   end
 
   # Specifies which paths to compile per environment.
@@ -56,15 +58,13 @@ defmodule EdmBackend.Mixfile do
      {:cowboy, "~> 1.0"},
      {:excoveralls, "~> 0.5", only: :test},
 
-     # Required for JWT signing
-     {:joken, "~> 1.1"},
-
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
      {:ueberauth, "~> 0.3"},
      {:ueberauth_google, "~> 0.3"},
      {:ueberauth_edm, git: "https://github.com/mytardis/ueberauth_edm.git"},
      {:guardian, "~> 0.12.0"},
+     {:guardian_db, "~> 0.7"},
 
      # GraphQL support
      {:absinthe_plug, "~> 1.1"},

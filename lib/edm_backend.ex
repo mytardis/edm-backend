@@ -14,6 +14,7 @@ defmodule EdmBackend do
       supervisor(EdmBackend.Endpoint, []),
       # Start your own worker by calling: EdmBackend.Worker.start_link(arg1, arg2, arg3)
       # worker(EdmBackend.Worker, [arg1, arg2, arg3]),
+      worker(GuardianDb.ExpiredSweeper, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

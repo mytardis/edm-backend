@@ -11,9 +11,11 @@ defmodule EdmBackend.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
     plug EdmBackend.Plug.RemoteIp
-    plug Guardian.Plug.VerifyHeader
+    plug Guardian.Plug.VerifyHeader, realm: "Bearer"
     plug Guardian.Plug.LoadResource
+    plug EdmBackend.GraphQL.Context
   end
 
   scope "/", EdmBackend do
@@ -23,7 +25,10 @@ defmodule EdmBackend.Router do
   end
 
   scope "/auth", EdmBackend do
-    pipe_through :default
+    pipe_through :api
+
+    post "/refresh_token", AuthController, :refresh_token
+    get "/refresh_token", AuthController, :refresh_token
 
     get "/api/:provider", AuthController, :api_request
     get "/api", AuthController, :api_request

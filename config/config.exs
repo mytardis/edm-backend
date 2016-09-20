@@ -37,7 +37,12 @@ config :guardian, Guardian,
   issuer: "edm-backend",
   ttl: {30, :days},
   verify_issuer: true,
-  serializer: EdmBackend.GuardianSerialiser
+  serializer: EdmBackend.GuardianSerialiser,
+  hooks: GuardianDb
+
+config :guardian_db, GuardianDb,
+  repo: EdmBackend.Repo,
+  sweep_interval: 120 # 120 minutes
 
 # Global database config
 config :edm_backend, EdmBackend.Repo,
