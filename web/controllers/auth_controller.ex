@@ -89,8 +89,7 @@ defmodule EdmBackend.AuthController do
       oauth_params ->
         conn = conn |> delete_session(:signin_oauth2)
                     |> Guardian.Plug.api_sign_in(user)
-        jwt = Guardian.Plug.current_token(conn)
-        {:ok, conn, jwt, oauth_params}
+        {:ok, conn, Guardian.Plug.current_token(conn), oauth_params}
     end
 
     case oauth_params do
@@ -127,6 +126,8 @@ defmodule EdmBackend.AuthController do
   end
 
   defp oauth_implicit_redirect(conn, %{redirect_uri: redirect_uri, state: state}, token) do
+    Logger.debug("!!!!!!!!!!!!!!!!!!!!!!!!!")
+    Logger.debug inspect(token)
     redirect_uri = redirect_uri <> "#access_token=" <> URI.encode(token) <> "&token_type=Bearer"
     case state do
       nil ->
