@@ -7,6 +7,9 @@ defmodule EdmBackend.Facility do
   alias EdmBackend.Client
   alias EdmBackend.InstrumentGroup
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
   schema "facilities" do
     field :name, :string
     has_many :instrument_groups, InstrumentGroup

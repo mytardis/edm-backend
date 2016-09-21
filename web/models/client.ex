@@ -6,6 +6,9 @@ defmodule EdmBackend.Client do
   use EdmBackend.Web, :model
   alias EdmBackend.InstrumentGroup
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
   schema "clients" do
     field :uuid, :string
     field :ip_address, :string
