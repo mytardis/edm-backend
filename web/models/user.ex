@@ -139,7 +139,7 @@ defmodule EdmBackend.User do
     member_of? tail ++ [head.parent], target_gid
   end
 
-  def member_of?(user, gid) when is_integer(gid) do
+  def member_of?(user, gid) do
     user |> all_groups |> member_of?(gid)
   end
 
