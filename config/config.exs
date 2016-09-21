@@ -28,7 +28,21 @@ config :logger, :console,
   metadata: [:request_id]
 
 config :ueberauth, Ueberauth,
-  providers: [ google: { Ueberauth.Strategy.Google, [] } ]
+  providers: [
+    edm_auth: { Ueberauth.Strategy.EDM, [] }
+  ]
+
+config :guardian, Guardian,
+  verify_module: Guardian.JWT,
+  issuer: "edm-backend",
+  ttl: {30, :days},
+  verify_issuer: true,
+  serializer: EdmBackend.GuardianSerialiser,
+  hooks: GuardianDb
+
+config :guardian_db, GuardianDb,
+  repo: EdmBackend.Repo,
+  sweep_interval: 120 # 120 minutes
 
 # Global database config
 config :edm_backend, EdmBackend.Repo,

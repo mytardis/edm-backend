@@ -4,21 +4,20 @@ defmodule EdmBackend.UserFromAuth do
   """
 
   alias Ueberauth.Auth
+  alias EdmBackend.User
+  import Logger
 
-  def find_or_create(%Auth{provider: :identity} = auth) do
-    case validate_pass(auth.credentials) do
-      :ok ->
-        {:ok, basic_info(auth)}
-      {:error, reason} -> {:error, reason}
-    end
-  end
+  def find_or_create(%Auth{provider: provider, credentials: credentials} = auth) do
+    Logger.debug "This is the auth data, provided by #{provider}:"
+    Logger.debug inspect(auth)
 
-  def find_or_create(%Auth{} = auth) do
-    {:ok, basic_info(auth)}
+    user_info = basic_info(auth)
+
+    User.get_or_create(provider, user_info, credentials)
   end
 
   defp basic_info(auth) do
-    %{id: auth.uid, name: name_from_auth(auth), avatar: auth.info.image}
+    %{id: auth.uid, name: name_from_auth(auth), avatar: auth.info.image, email: auth.info.email}
   end
 
   defp name_from_auth(auth) do
@@ -34,15 +33,4 @@ defmodule EdmBackend.UserFromAuth do
       end
     end
   end
-
-  defp validate_pass(%{other: %{password: ""}}) do
-    {:error, "Password required"}
-  end
-  defp validate_pass(%{other: %{password: pw, password_confirmation: pw}}) do
-    :ok
-  end
-  defp validate_pass(%{other: %{password: _}}) do
-    {:error, "Passwords do not match"}
-  end
-  defp validate_pass(_), do: {:error, "Password Required"}
 end
