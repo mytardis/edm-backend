@@ -5,9 +5,6 @@ defmodule EdmBackend.UserCredential do
   use EdmBackend.Web, :model
   alias EdmBackend.User
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
-
   schema "user_credentials" do
     field :auth_provider, :string
     field :remote_id, :string

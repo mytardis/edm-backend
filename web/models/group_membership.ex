@@ -6,9 +6,6 @@ defmodule EdmBackend.GroupMembership do
   alias EdmBackend.User
   alias EdmBackend.Group
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
-
   schema "group_memberships" do
     belongs_to :user, User
     belongs_to :group, Group
