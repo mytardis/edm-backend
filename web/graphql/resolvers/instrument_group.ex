@@ -1,10 +1,10 @@
 defmodule EdmBackend.GraphQL.Resolver.InstrumentGroup do
+  require Logger
   alias Absinthe.Relay
   alias EdmBackend.Repo
   alias EdmBackend.InstrumentGroup
   alias EdmBackend.Facility
   import Ecto.Query
-  require Logger
 
   def list(args, facility) do
     query = from instrument_group in InstrumentGroup,

@@ -1,10 +1,10 @@
 defmodule EdmBackend.GraphQL.Schema do
+  require Logger
   use Absinthe.Schema
   use Absinthe.Relay.Schema
   alias EdmBackend.GraphQL.Resolver
   alias EdmBackend.User
   alias EdmBackend.Client
-  require Logger
 
   import_types EdmBackend.GraphQL.Types
 

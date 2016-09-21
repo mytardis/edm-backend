@@ -1,8 +1,8 @@
 defmodule EdmBackend.GraphQL.Types do
+  require Logger
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation
   alias EdmBackend.GraphQL.Resolver
-  require Logger
 
   node interface do
     resolve_type fn

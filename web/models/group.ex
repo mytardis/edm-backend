@@ -3,11 +3,12 @@ defmodule EdmBackend.Group do
   Represents user groups, and group hierarchies
   """
 
+  require Logger
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
-  require Logger
+
 
   schema "groups" do
     field :name, :string

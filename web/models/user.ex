@@ -3,6 +3,7 @@ defmodule EdmBackend.User do
   Represents a user
   """
 
+  require Logger
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
   alias EdmBackend.User
@@ -10,7 +11,6 @@ defmodule EdmBackend.User do
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
   import Ecto.Query
-  require Logger
 
   schema "users" do
     field :name, :string
