@@ -5,7 +5,7 @@ defmodule EdmBackend.UserFromAuth do
 
   alias Ueberauth.Auth
   alias EdmBackend.User
-  import Logger
+  require Logger
 
   def find_or_create(%Auth{provider: provider, credentials: credentials} = auth) do
     Logger.debug "This is the auth data, provided by #{provider}:"

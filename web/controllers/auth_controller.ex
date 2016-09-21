@@ -4,7 +4,7 @@ defmodule EdmBackend.AuthController do
   plug Ueberauth
 
   alias EdmBackend.UserFromAuth
-  import Logger
+  require Logger
 
   @supported_oauth_response_types ~w(token)
 

@@ -10,7 +10,7 @@ defmodule EdmBackend.User do
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
   import Ecto.Query
-  import Logger
+  require Logger
 
   schema "users" do
     field :name, :string

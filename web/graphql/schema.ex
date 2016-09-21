@@ -4,7 +4,7 @@ defmodule EdmBackend.GraphQL.Schema do
   alias EdmBackend.GraphQL.Resolver
   alias EdmBackend.User
   alias EdmBackend.Client
-  import Logger
+  require Logger
 
   import_types EdmBackend.GraphQL.Types
 

@@ -7,7 +7,7 @@ defmodule EdmBackend.Group do
   alias EdmBackend.Repo
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
-  import Logger
+  require Logger
 
   schema "groups" do
     field :name, :string

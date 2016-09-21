@@ -2,7 +2,7 @@ defmodule EdmBackend.GraphQL.Types do
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation
   alias EdmBackend.GraphQL.Resolver
-  import Logger
+  require Logger
 
   node interface do
     resolve_type fn
