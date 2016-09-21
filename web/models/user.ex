@@ -52,12 +52,12 @@ defmodule EdmBackend.User do
           |> Repo.insert!
           user
         end
-        {:ok, result}
+        result
       user_credential ->
         user_credential = user_credential |> Repo.preload(:user)
         user_credential |> UserCredential.changeset(%{extra_data: extra_data})
                         |> Repo.update!
-        user_credential.user
+        {:ok, user_credential.user}
     end
   end
 

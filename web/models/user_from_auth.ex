@@ -13,7 +13,7 @@ defmodule EdmBackend.UserFromAuth do
 
     user_info = basic_info(auth)
 
-    {:ok, User.get_or_create(provider, user_info, credentials)}
+    User.get_or_create(provider, user_info, credentials)
   end
 
   defp basic_info(auth) do

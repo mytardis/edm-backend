@@ -8,6 +8,7 @@ defmodule EdmBackend.AuthController do
 
   @supported_oauth_response_types ~w(token)
 
+  # This returns the first auth provider in the ueberauth config
   defp get_default_provider() do
     [default_provider|_] = Application.get_env(:ueberauth, Ueberauth)
                               |> Keyword.get(:providers)
@@ -15,11 +16,21 @@ defmodule EdmBackend.AuthController do
     default_provider |> Atom.to_string
   end
 
+  @doc """
+  Request function executed only if ueberauth does not intercept the request.
+  This occurs if the authentication provider is invalid or not specified, and
+  will redirect to the default auth provider.
+  """
   def request(conn, params) do
     params = params |> Map.put("provider", get_default_provider)
     conn |> redirect(to: auth_path(conn, :request, get_default_provider, params))
   end
 
+  @doc """
+  This function is executed when performing authentication for API access, via
+  an OAuth2 flow. OAuth2 parameters are stored in the session for use once the
+  callback endpoint is triggered by the OAuth2 server.
+  """
   def api_request(%{query_params: %{
       "client_id" => client_id,
       "redirect_uri" => redirect_uri,
@@ -51,10 +62,17 @@ defmodule EdmBackend.AuthController do
       end
   end
 
+  @doc """
+  This function is called if an API authentication request is triggered with
+  missing parameters.
+  """
   def api_request(conn, _) do
     conn |> json(%{error: "client_id, redirect_uri and response_type are required"})
   end
 
+  @doc """
+  Validates the client id and redirect URI
+  """
   def validate_oauth_client(client_id, redirect_uri) do
     # PUT REAL CLIENT CHECKING LOGIC HERE
     case {client_id, redirect_uri} do
@@ -67,10 +85,16 @@ defmodule EdmBackend.AuthController do
     end
   end
 
+  @doc """
+  OAuth2 callback function called when the authentication has failed
+  """
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
     conn |> render_signin_failure("Failed to authenticate.")
   end
 
+  @doc """
+  OAuth2 callback function called when the authentication is successful
+  """
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
     redirect = Map.get(params, "state", "/")
     case UserFromAuth.find_or_create(auth) do
@@ -81,6 +105,9 @@ defmodule EdmBackend.AuthController do
     end
   end
 
+  # Renders a successful signin attempt, either by redirecting to the third-party
+  # app in the case of API authentication, or to the internal route for standard
+  # auth.
   defp render_signing_success(conn, user, redirect \\ "/") do
     conn = conn |> fetch_flash
     {:ok, conn, jwt, oauth_params} = case get_session(conn, :signin_oauth2) do
@@ -108,6 +135,7 @@ defmodule EdmBackend.AuthController do
     end
   end
 
+  # Renders a failure message if the authentication fails
   defp render_signin_failure(conn, reason, redirect \\ "/") do
     case get_session(conn, :signin_oauth2) do
       nil ->
@@ -125,9 +153,9 @@ defmodule EdmBackend.AuthController do
     end
   end
 
+  # Performs an OAuth2 implicit auth redirect, where the token is encoded in the
+  # URL fragment.
   defp oauth_implicit_redirect(conn, %{redirect_uri: redirect_uri, state: state}, token) do
-    Logger.debug("!!!!!!!!!!!!!!!!!!!!!!!!!")
-    Logger.debug inspect(token)
     redirect_uri = redirect_uri <> "#access_token=" <> URI.encode(token) <> "&token_type=Bearer"
     case state do
       nil ->
@@ -137,6 +165,9 @@ defmodule EdmBackend.AuthController do
     end
   end
 
+  @doc """
+  Renews the current token used for API auth
+  """
   def refresh_token(conn, _params) do
     token = conn |> Guardian.Plug.current_token
     case token |> Guardian.refresh! do
@@ -149,6 +180,9 @@ defmodule EdmBackend.AuthController do
 
   end
 
+  @doc """
+  Invalidates the current session
+  """
   def delete(conn, _params) do
     conn
     |> Guardian.Plug.sign_out
