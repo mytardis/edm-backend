@@ -23,6 +23,11 @@ defmodule EdmBackend.Web do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
+
+      # Ensure uuid primary keys are used for all models
+      @primary_key {:id, :binary_id, autogenerate: true}
+      @foreign_key_type :binary_id
+      
     end
   end
 

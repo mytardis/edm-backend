@@ -3,6 +3,7 @@ defmodule EdmBackend.User do
   Represents a user
   """
 
+  require Logger
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
   alias EdmBackend.User
@@ -10,7 +11,6 @@ defmodule EdmBackend.User do
   alias EdmBackend.UserCredential
   alias EdmBackend.GroupMembership
   import Ecto.Query
-  import Logger
 
   schema "users" do
     field :name, :string
@@ -139,7 +139,7 @@ defmodule EdmBackend.User do
     member_of? tail ++ [head.parent], target_gid
   end
 
-  def member_of?(user, gid) when is_integer(gid) do
+  def member_of?(user, gid) do
     user |> all_groups |> member_of?(gid)
   end
 

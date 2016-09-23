@@ -4,7 +4,7 @@
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 use Mix.Config
-import Logger
+require Logger
 
 # Configure flasked for environment-based config
 config :flasked,

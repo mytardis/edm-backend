@@ -1,10 +1,9 @@
 defmodule EdmBackend.AuthController do
+  require Logger
   use EdmBackend.Web, :controller
+  alias EdmBackend.UserFromAuth
 
   plug Ueberauth
-
-  alias EdmBackend.UserFromAuth
-  import Logger
 
   @supported_oauth_response_types ~w(token)
 

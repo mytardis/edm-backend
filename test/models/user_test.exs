@@ -1,9 +1,8 @@
 defmodule EdmBackend.UserModelTest do
+  require Logger
   use EdmBackend.ModelCase
   alias EdmBackend.User
   alias EdmBackend.Group
-
-  require Logger
 
   test "valid user values" do
     user = %User{} |> User.changeset(%{
