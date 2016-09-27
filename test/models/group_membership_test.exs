@@ -1,31 +1,30 @@
 defmodule EdmBackend.GroupMembershipModelTest do
   use EdmBackend.ModelCase
   alias EdmBackend.GroupMembership
-  alias EdmBackend.User
+  alias EdmBackend.Client
   alias EdmBackend.Group
 
   test "group membership validation" do
-    user = %User{} |> User.changeset(%{
-      name: "someone",
-      email: "someone@example.com"
+    client = %Client{} |> Client.changeset(%{
+      name: "someone"
     })
     group = %Group{} |> Group.changeset(%{
       name: "a group",
       description: "a group description"
     })
 
-    {:ok, user} = Repo.insert user
+    {:ok, client} = Repo.insert client
     {:ok, group} = Repo.insert group
 
     group_membership1 = %GroupMembership{} |> GroupMembership.changeset
     group_membership2 = %GroupMembership{
-      user: user
+      client: client
     } |> GroupMembership.changeset
     group_membership3 = %GroupMembership{
       group: group
     } |> GroupMembership.changeset
     group_membership4 = %GroupMembership{
-      user: user,
+      client: client,
       group: group
     } |> GroupMembership.changeset
 
@@ -36,9 +35,8 @@ defmodule EdmBackend.GroupMembershipModelTest do
   end
 
   test "group membership uniqueness" do
-    user = %User{} |> User.changeset(%{
-      name: "someone",
-      email: "someone@example.com"
+    client = %Client{} |> Client.changeset(%{
+      name: "someone"
     })
     group1 = %Group{} |> Group.changeset(%{
       name: "a group",
@@ -49,22 +47,22 @@ defmodule EdmBackend.GroupMembershipModelTest do
       description: "a group description"
     })
 
-    {:ok, user} = Repo.insert user
+    {:ok, client} = Repo.insert client
     {:ok, group1} = Repo.insert group1
     {:ok, group2} = Repo.insert group2
 
     group_membership1 = %GroupMembership{
-      user: user,
+      client: client,
       group: group1
     } |> GroupMembership.changeset
 
     group_membership2 = %GroupMembership{
-      user: user,
+      client: client,
       group: group1
     } |> GroupMembership.changeset
 
     group_membership3 = %GroupMembership{
-      user: user,
+      client: client,
       group: group2
     } |> GroupMembership.changeset
 

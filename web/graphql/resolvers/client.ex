@@ -2,14 +2,13 @@ defmodule EdmBackend.GraphQL.Resolver.Client do
   alias Absinthe.Relay
   alias EdmBackend.Repo
   alias EdmBackend.Client
-  alias EdmBackend.InstrumentGroup
-  import Ecto.Query
 
-  def list(args, instrument_group) do
-    query = from client in Client,
-              join: i_group in assoc(client, :instrument_group),
-              where: i_group.id == ^instrument_group.id
-    {:ok, query |> Relay.Connection.from_query(&Repo.all/1, args)}
+  def list_groups_flat(args, client) do
+    {:ok, client |> Client.all_groups_flat |> Relay.Connection.from_list(args)}
+  end
+
+  def list_groups(args, client) do
+    {:ok, client |> Client.all_groups |> Relay.Connection.from_list(args)}
   end
 
   def list(args) do

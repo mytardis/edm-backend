@@ -1,19 +1,19 @@
-defmodule EdmBackend.UserFromAuth do
+defmodule EdmBackend.ClientFromAuth do
   @moduledoc """
-  Retrieve the user information from an auth request
+  Retrieve the client information from an auth request
   """
 
   alias Ueberauth.Auth
-  alias EdmBackend.User
+  alias EdmBackend.Client
   require Logger
 
   def find_or_create(%Auth{provider: provider, credentials: credentials} = auth) do
     Logger.debug "This is the auth data, provided by #{provider}:"
     Logger.debug inspect(auth)
 
-    user_info = basic_info(auth)
+    client_info = basic_info(auth)
 
-    User.get_or_create(provider, user_info, credentials)
+    Client.get_or_create(provider, client_info, Map.from_struct(credentials))
   end
 
   defp basic_info(auth) do

@@ -1,6 +1,6 @@
 defmodule EdmBackend.Group do
   @moduledoc """
-  Represents user groups, and group hierarchies
+  Represents client groups, and group hierarchies
   """
 
   require Logger
@@ -16,7 +16,7 @@ defmodule EdmBackend.Group do
     has_many :children, Group, foreign_key: :parent_id, on_delete: :delete_all
     belongs_to :parent, Group, foreign_key: :parent_id
     has_many :group_memberships, GroupMembership, on_delete: :delete_all
-    has_many :users, through: [:group_memberships, :user]
+    has_many :clients, through: [:group_memberships, :client]
     timestamps
   end
 
@@ -32,7 +32,7 @@ defmodule EdmBackend.Group do
   end
 
   @doc """
-  Returns a list of users who are members of this group of any of its children
+  Returns a list of clients who are members of this group of any of its children
   """
   def members(group) do
     group = group |> load_children
@@ -40,7 +40,7 @@ defmodule EdmBackend.Group do
   end
 
   defp members([group|remaining_groups], member_list) do
-    %{users: members} = group |> Repo.preload(:users)
+    %{clients: members} = group |> Repo.preload(:clients)
     members(remaining_groups ++ group.children, member_list ++ members)
   end
 

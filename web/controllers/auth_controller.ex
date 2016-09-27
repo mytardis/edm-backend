@@ -1,7 +1,7 @@
 defmodule EdmBackend.AuthController do
   require Logger
   use EdmBackend.Web, :controller
-  alias EdmBackend.UserFromAuth
+  alias EdmBackend.ClientFromAuth
 
   plug Ueberauth
 
@@ -96,9 +96,9 @@ defmodule EdmBackend.AuthController do
   """
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
     redirect = Map.get(params, "state", "/")
-    case UserFromAuth.find_or_create(auth) do
-      {:ok, user} ->
-        conn |> render_signing_success(user, redirect)
+    case ClientFromAuth.find_or_create(auth) do
+      {:ok, client} ->
+        conn |> render_signing_success(client, redirect)
       {:error, reason} ->
         conn |> render_signin_failure(reason, redirect)
     end
@@ -107,14 +107,14 @@ defmodule EdmBackend.AuthController do
   # Renders a successful signin attempt, either by redirecting to the third-party
   # app in the case of API authentication, or to the internal route for standard
   # auth.
-  defp render_signing_success(conn, user, redirect \\ "/") do
+  defp render_signing_success(conn, client, redirect \\ "/") do
     conn = conn |> fetch_flash
     {:ok, conn, jwt, oauth_params} = case get_session(conn, :signin_oauth2) do
       nil ->
         {:ok, conn, nil, nil}
       oauth_params ->
         conn = conn |> delete_session(:signin_oauth2)
-                    |> Guardian.Plug.api_sign_in(user)
+                    |> Guardian.Plug.api_sign_in(client)
         {:ok, conn, Guardian.Plug.current_token(conn), oauth_params}
     end
 
@@ -122,12 +122,12 @@ defmodule EdmBackend.AuthController do
       nil ->
         try do
           conn
-          |> Guardian.Plug.sign_in(user)
-          |> put_flash(:info, "Logged in as #{user.name}")
+          |> Guardian.Plug.sign_in(client)
+          |> put_flash(:info, "Logged in as #{client.name}")
           |> redirect(to: redirect)
         rescue
           ArgumentError ->
-            conn |> render_signing_success(user)
+            conn |> render_signing_success(client)
         end
       %{response_type: "token"} ->
         conn |> oauth_implicit_redirect(oauth_params, jwt)
