@@ -17,6 +17,11 @@ defmodule EdmBackend.GraphQL.Types do
     end
   end
 
+  scalar :datetime do
+    parse &Calendar.DateTime.Parse.rfc3339_utc/1
+    serialize &Calendar.DateTime.Format.rfc3339/1
+  end
+
   node interface do
     resolve_type fn
       %EdmBackend.Client{}, _ -> :client
@@ -76,6 +81,24 @@ defmodule EdmBackend.GraphQL.Types do
           Resolver.Credential.list(pagination_args, client)
       end
     end
+  end
+
+  connection node_type :file
+  node object :file do
+    field :filepath, :string
+    field :size, :integer
+    field :mode, :integer
+    field :atime, :datetime
+    field :mtime, :datetime
+    field :ctime, :datetime
+    field :birthtime, :datetime
+
+    field :source, :source do
+      resolve fn _, _ ->
+        Resolver.File.get_source
+      end
+    end
+
   end
 
 end

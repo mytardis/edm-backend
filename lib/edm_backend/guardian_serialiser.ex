@@ -13,7 +13,7 @@ defmodule EdmBackend.GuardianSerialiser do
   end
 
   def from_token("Client:" <> id) do
-    {:ok, Repo.get(Client, String.to_integer(id))}
+    {:ok, Repo.get(Client, id)}
   end
 
   def from_token(_) do
