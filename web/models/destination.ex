@@ -6,7 +6,7 @@ defmodule EdmBackend.Destination do
   alias EdmBackend.Source
 
   schema "destinations" do
-    field :base, :string
+    field :base, :string  # path in destination
 
     belongs_to :endpoint, Endpoint
     belongs_to :source, Source

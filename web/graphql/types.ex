@@ -94,8 +94,8 @@ defmodule EdmBackend.GraphQL.Types do
     field :birthtime, :datetime
 
     field :source, :source do
-      resolve fn _, _ ->
-        Resolver.File.get_source
+      resolve fn %{input_data: input_data}, %{context: context} ->
+        Resolver.File.get_source(input_data, context)
       end
     end
 

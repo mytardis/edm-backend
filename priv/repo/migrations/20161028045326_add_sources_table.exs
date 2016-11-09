@@ -7,7 +7,7 @@ defmodule EdmBackend.Repo.Migrations.AddSourcesTable do
       add :name, :string, size: 255
       add :fstype, :string, size: 20
 
-      add :owner_id, references(:groups, type: :uuid)
+      add :owner_id, references(:clients, type: :uuid)
 
       timestamps
     end
