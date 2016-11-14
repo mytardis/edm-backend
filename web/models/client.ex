@@ -10,6 +10,7 @@ defmodule EdmBackend.Client do
   alias EdmBackend.Group
   alias EdmBackend.Credential
   alias EdmBackend.GroupMembership
+  alias EdmBackend.Source
   import Ecto.Query
 
   schema "clients" do
@@ -18,6 +19,7 @@ defmodule EdmBackend.Client do
     has_many :credentials, Credential
     has_many :group_memberships, GroupMembership
     has_many :groups, through: [:group_memberships, :group]
+    has_many :sources, Source, foreign_key: :owner_id
     timestamps
   end
 
@@ -112,6 +114,11 @@ defmodule EdmBackend.Client do
            |> Enum.map(fn(g) ->
              g |> Group.load_parents
          end)
+  end
+
+  def all_sources(client) do
+    client |> Repo.preload(:sources)
+           |> Map.get(:sources)
   end
 
   @doc """

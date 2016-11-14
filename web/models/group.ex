@@ -9,7 +9,6 @@ defmodule EdmBackend.Group do
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
 
-
   schema "groups" do
     field :name, :string
     field :description, :string

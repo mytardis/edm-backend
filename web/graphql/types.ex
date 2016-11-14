@@ -59,6 +59,61 @@ defmodule EdmBackend.GraphQL.Types do
     field :extra_data, :map
   end
 
+  node object :host do
+    field :name, :string
+    field :transfer_method, :string
+    field :settings, :map
+  end
+
+  node object :destination do
+    field :base, :string  # path in destination
+    field :host, :host
+  end
+
+  connection node_type: :file_transfer
+  node object :file_transfer do
+    field :transfer_status, :string
+    field :bytes_transferred, :integer
+    field :destination, :destination
+  end
+
+  connection node_type: :file
+  node object :file do
+    field :filepath, :string
+    field :size, :integer
+    field :mode, :integer
+    field :atime, :datetime
+    field :mtime, :datetime
+    field :ctime, :datetime
+    field :birthtime, :datetime
+    # has_many :file_transfers, FileTransfer
+    connection field :file_transfers, node_type: :file_transfer do
+      resolve fn pagination_args, %{source: file} ->
+        Resolver.FileTransfer.list(pagination_args, file)
+      end
+    end
+    # many_to_many :destinations, Destination, join_through: FileTransfer
+  end
+
+  connection node_type: :source
+  node object :source do
+    field :name, :string
+    field :fstype, :string
+
+    connection field :files, node_type: :file do
+      resolve fn pagination_args, %{source: source} ->
+        Resolver.File.list(pagination_args, source)
+      end
+    end
+    field :file, type: :file do
+      arg :filepath, :string
+      resolve fn %{filepath: filepath}, %{source: source} ->
+        Resolver.File.find(source, filepath)
+      end
+    end
+    #has_many :destinations, Destination
+  end
+
   connection node_type: :client
   node object :client do
     field :name, non_null(:string)
@@ -81,24 +136,22 @@ defmodule EdmBackend.GraphQL.Types do
           Resolver.Credential.list(pagination_args, client)
       end
     end
-  end
-
-  connection node_type :file
-  node object :file do
-    field :filepath, :string
-    field :size, :integer
-    field :mode, :integer
-    field :atime, :datetime
-    field :mtime, :datetime
-    field :ctime, :datetime
-    field :birthtime, :datetime
-
-    field :source, :source do
-      resolve fn %{input_data: input_data}, %{context: context} ->
-        Resolver.File.get_source(input_data, context)
+    connection field :sources, node_type: :source do
+      resolve fn
+        pagination_args, %{client: client} ->
+          Resolver.Source.list_sources(pagination_args, client)
       end
     end
-
+    field :source, type: :source do
+      arg :name, :string
+      resolve fn %{name: name}, %{source: client} ->
+        Resolver.Source.find(client, name)
+      end
+    end
   end
 
+  input_object :file_input_object do
+    field :filepath, :string
+
+  end
 end

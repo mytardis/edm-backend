@@ -7,7 +7,7 @@ defmodule EdmBackend.Repo.Migrations.AddDestinationsTable do
 
       add :base, :text
 
-      add :endpoint_id, references(:endpoints, type: :uuid)
+      add :host_id, references(:hosts, type: :uuid)
       add :source_id, references(:sources, type: :uuid)
 
       timestamps

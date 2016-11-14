@@ -4,7 +4,7 @@ defmodule EdmBackend.Source do
   alias EdmBackend.File
   alias EdmBackend.Client
 
-  schema "source" do
+  schema "sources" do
     field :name, :string  # basepath
     field :fstype, :string  # POSIX, NTFS
 

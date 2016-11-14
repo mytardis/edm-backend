@@ -23,7 +23,9 @@ defmodule EdmBackend.GraphQL.Schema do
         _, %{context: %{current_resource: %Client{} = current_client}} ->
           Resolver.Client.find(%{id: current_client.id})
         _, _ ->
-          {:error, "Not logged in"}
+          Resolver.Client.find(%{id: "bdeffb9c-652e-485b-bdf1-08de73ee9be0"})
+        # debug with hard coded client
+          # {:error, "Not logged in"}
       end
     end
 
@@ -43,6 +45,24 @@ defmodule EdmBackend.GraphQL.Schema do
   end
 
   mutation do
+    payload field :create_file do
+      input do
+        field :file, :file_input_object
+      end
+      output do
+        field :file, :file
+      end
+      resolve &Resolver.File.create/2
+    end
+
+    payload field :update_file do
+
+    end
+
+    payload field :delete_file do
+
+    end
+
     payload field :create_client do
       input do
         field :uuid, non_null(:string)
