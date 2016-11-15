@@ -3,6 +3,7 @@ defmodule EdmBackend.GraphQL.Types do
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation
   alias EdmBackend.GraphQL.Resolver
+  alias EdmBackend.Repo
 
   @desc """
   This scalar contains arbitrary map data that does not have a predefined schema
@@ -67,14 +68,18 @@ defmodule EdmBackend.GraphQL.Types do
 
   node object :destination do
     field :base, :string  # path in destination
-    field :host, :host
+    field :host, type: :host do
+      resolve fn _, %{source: destination} ->
+        Resolver.Host.find(%{destination: destination})
+      end
+    end
   end
 
   connection node_type: :file_transfer
   node object :file_transfer do
     field :transfer_status, :string
     field :bytes_transferred, :integer
-    field :destination, :destination
+    field :destination, type: :destination
   end
 
   connection node_type: :file
@@ -111,7 +116,11 @@ defmodule EdmBackend.GraphQL.Types do
         Resolver.File.find(source, filepath)
       end
     end
-    #has_many :destinations, Destination
+    field :destinations, list_of(:destination) do
+      resolve fn _, %{source: source} ->
+        Resolver.Destination.list_destinations(source)
+      end
+    end
   end
 
   connection node_type: :client
@@ -136,10 +145,15 @@ defmodule EdmBackend.GraphQL.Types do
           Resolver.Credential.list(pagination_args, client)
       end
     end
-    connection field :sources, node_type: :source do
+    field :sources, list_of(:source) do
       resolve fn
-        pagination_args, %{client: client} ->
-          Resolver.Source.list_sources(pagination_args, client)
+        _args, %{source: client} ->
+          Resolver.Source.list_sources(client)
+      end
+    end
+    field :hosts, list_of(:host) do
+      resolve fn _args, %{source: client} ->
+        Resolver.Host.list_hosts(client)
       end
     end
     field :source, type: :source do

@@ -4,8 +4,8 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
   alias EdmBackend.Source
   alias EdmBackend.Client
 
-  def list_sources(args, client) do
-    {:ok, client |> Client.all_sources |> Relay.Connection.from_list(args)}
+  def list_sources(client) do
+    {:ok, client |> Source.all_sources}
   end
 
   def list(args) do
