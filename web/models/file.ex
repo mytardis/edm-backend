@@ -38,6 +38,12 @@ defmodule EdmBackend.File do
     timestamps
   end
 
+  @allowed ~w(filepath size mode atime mtime ctime birthtime source)a
   @required ~w(filepath size mtime)a
+
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> validate_required(@required)
+  end
 
 end

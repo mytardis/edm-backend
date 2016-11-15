@@ -21,6 +21,7 @@ defmodule EdmBackend.Mixfile do
   def application do
     [mod: {EdmBackend, []},
      applications: [
+       :calendar,
        :flasked,
        :phoenix,
        :phoenix_pubsub,
@@ -71,6 +72,7 @@ defmodule EdmBackend.Mixfile do
      {:absinthe_relay, "~> 0.9.4"},
      {:poison, "~> 2.1.0"},
      {:cors_plug, "~> 1.1"}, # Needed for cross-site access
+     {:calendar, "~> 0.16.1"},
 
      # Watch configured tasks
      {:eye_drops, "~> 1.2"},

@@ -166,6 +166,11 @@ defmodule EdmBackend.GraphQL.Types do
 
   input_object :file_input_object do
     field :filepath, :string
-
+    field :size, :integer
+    field :mode, :integer
+    field :atime, :datetime
+    field :mtime, :datetime
+    field :ctime, :datetime
+    field :birthtime, :datetime
   end
 end

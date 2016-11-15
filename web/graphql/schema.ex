@@ -47,12 +47,17 @@ defmodule EdmBackend.GraphQL.Schema do
   mutation do
     payload field :create_file do
       input do
+        field :source, :string  # source name
         field :file, :file_input_object
       end
       output do
         field :file, :file
       end
-      resolve &Resolver.File.create/2
+      # resolve fn %{file: file, source: source_name}, %{context: %{current_resource: %Client{} = client}} ->
+      resolve fn %{file: file, source: source_name}, _ ->
+        {:ok, client} = Resolver.Client.find(%{id: "bdeffb9c-652e-485b-bdf1-08de73ee9be0"})
+        Resolver.File.create(client, source_name, file)
+      end
     end
 
     payload field :update_file do
