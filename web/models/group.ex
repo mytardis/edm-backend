@@ -6,6 +6,7 @@ defmodule EdmBackend.Group do
   require Logger
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
+  alias EdmBackend.Destination
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
 
@@ -16,6 +17,7 @@ defmodule EdmBackend.Group do
     belongs_to :parent, Group, foreign_key: :parent_id
     has_many :group_memberships, GroupMembership, on_delete: :delete_all
     has_many :clients, through: [:group_memberships, :client]
+    has_many :destinations, Destination
     timestamps
   end
 

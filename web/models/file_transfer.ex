@@ -13,4 +13,12 @@ defmodule EdmBackend.FileTransfer do
 
     timestamps
   end
+
+  @allowed ~w(transfer_status bytes_transferred file_id destination_id)a
+  @required ~w(transfer_status file_id destination_id)a
+
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> validate_required(@required)
+  end
 end

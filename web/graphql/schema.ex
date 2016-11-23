@@ -23,9 +23,9 @@ defmodule EdmBackend.GraphQL.Schema do
         _, %{context: %{current_resource: %Client{} = current_client}} ->
           Resolver.Client.find(%{id: current_client.id})
         _, _ ->
-          Resolver.Client.find(%{id: "bdeffb9c-652e-485b-bdf1-08de73ee9be0"})
+          # Resolver.Client.find(%{id: "bdeffb9c-652e-485b-bdf1-08de73ee9be0"})
         # debug with hard coded client
-          # {:error, "Not logged in"}
+          {:error, "Not logged in"}
       end
     end
 
@@ -41,22 +41,28 @@ defmodule EdmBackend.GraphQL.Schema do
           Resolver.File.find(%{id: id})
       end
     end
-
   end
 
   mutation do
-    payload field :create_file do
+    payload field :get_or_create_file do
       input do
-        field :source, :string  # source name
+        field :source, :source_input_object
         field :file, :file_input_object
       end
       output do
-        field :file, :file
+        field :file, type: :file
+        field :file_id, :string
       end
-      # resolve fn %{file: file, source: source_name}, %{context: %{current_resource: %Client{} = client}} ->
-      resolve fn %{file: file, source: source_name}, _ ->
-        {:ok, client} = Resolver.Client.find(%{id: "bdeffb9c-652e-485b-bdf1-08de73ee9be0"})
-        Resolver.File.create(client, source_name, file)
+      resolve fn %{source: %{name: source_name}, file: file_info},
+                 %{context: %{current_resource: %Client{} = client}} ->
+        # get source by client and name, get file by source and file info
+        case Resolver.Source.find(client, source_name) do
+          {:ok, source} ->
+            {:ok, file} = Resolver.File.get_or_create(source, file_info)
+            {:ok, %{file_id: file.id, file: file}}
+          {:error, error} ->
+            {:error, error}
+        end
       end
     end
 

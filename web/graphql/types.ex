@@ -164,6 +164,10 @@ defmodule EdmBackend.GraphQL.Types do
     end
   end
 
+  input_object :source_input_object do
+    field :name, :string
+  end
+
   input_object :file_input_object do
     field :filepath, :string
     field :size, :integer

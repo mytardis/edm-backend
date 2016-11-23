@@ -3,6 +3,7 @@ defmodule EdmBackend.Destination do
   alias EdmBackend.Destination
   alias EdmBackend.File
   alias EdmBackend.FileTransfer
+  alias EdmBackend.Group
   alias EdmBackend.Host
   alias EdmBackend.Repo
   alias EdmBackend.Source
@@ -10,6 +11,7 @@ defmodule EdmBackend.Destination do
   schema "destinations" do
     field :base, :string  # path in destination
 
+    belongs_to :group, Group
     belongs_to :host, Host
     belongs_to :source, Source
     has_many :file_transfers, FileTransfer

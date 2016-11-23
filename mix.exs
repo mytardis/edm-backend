@@ -49,9 +49,9 @@ defmodule EdmBackend.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, "~> 1.2.0-rc"},
+    [{:phoenix, "~> 1.2.0"},
      {:phoenix_pubsub, "~> 1.0"},
-     {:phoenix_ecto, "~> 3.0-rc"},
+     {:phoenix_ecto, "~> 3.0"},
      {:postgrex, ">= 0.11.2"},
      {:phoenix_html, "~> 2.6"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
@@ -73,6 +73,7 @@ defmodule EdmBackend.Mixfile do
      {:poison, "~> 2.1.0"},
      {:cors_plug, "~> 1.1"}, # Needed for cross-site access
      {:calendar, "~> 0.16.1"},
+     {:calecto, "~> 0.16.0"},
 
      # Watch configured tasks
      {:eye_drops, "~> 1.2"},

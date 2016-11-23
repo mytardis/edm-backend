@@ -7,6 +7,7 @@ defmodule EdmBackend.Repo.Migrations.AddDestinationsTable do
 
       add :base, :text
 
+      add :group_id, references(:destinations, type: :uuid)
       add :host_id, references(:hosts, type: :uuid)
       add :source_id, references(:sources, type: :uuid)
 

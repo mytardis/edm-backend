@@ -3,6 +3,7 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
   alias EdmBackend.Repo
   alias EdmBackend.Source
   alias EdmBackend.Client
+  import Ecto.Query
 
   def list_sources(client) do
     {:ok, client |> Source.all_sources}
@@ -20,9 +21,15 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
   end
 
   def find(client, name) do
-    case Repo.get_by(Source, owner_id: client.id, name: name) do
+    query = from s in Source,
+      where: s.owner_id == ^(client.id) and s.name == ^(name),
+      preload: :destinations,
+      select: s
+    case Repo.one(query) do
       nil -> {:error, "Source name #{name} not found"}
-      source -> {:ok, source}
+      source ->
+        Repo.preload(source, :destinations)
+        {:ok, source}
     end
   end
 end
