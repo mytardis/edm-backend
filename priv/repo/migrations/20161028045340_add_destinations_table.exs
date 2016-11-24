@@ -3,11 +3,10 @@ defmodule EdmBackend.Repo.Migrations.AddDestinationsTable do
 
   def change do
     create table(:destinations, primary_key: false) do
-      add :id, :uuid, primary_key: true
+      add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
 
       add :base, :text
 
-      add :group_id, references(:destinations, type: :uuid)
       add :host_id, references(:hosts, type: :uuid)
       add :source_id, references(:sources, type: :uuid)
 

@@ -9,6 +9,7 @@ defmodule EdmBackend.Source do
   schema "sources" do
     field :name, :string  # basepath
     field :fstype, :string  # POSIX, NTFS
+    field :settings, :map
 
     belongs_to :owner, Client
 

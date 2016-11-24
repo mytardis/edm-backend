@@ -11,6 +11,8 @@ defmodule EdmBackend.Host do
     field :transfer_method, :string
     field :settings, :map
 
+    belongs_to :group, Group
+
     has_many :destinations, Destination
 
     timestamps

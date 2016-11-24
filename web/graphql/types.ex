@@ -68,9 +68,10 @@ defmodule EdmBackend.GraphQL.Types do
 
   node object :destination do
     field :base, :string  # path in destination
-    field :host, type: :host do
+    field :host_id, type: :string do
       resolve fn _, %{source: destination} ->
-        Resolver.Host.find(%{destination: destination})
+        {:ok, %{id: id}} = Resolver.Host.find(%{destination: destination})
+        {:ok, id}
       end
     end
   end

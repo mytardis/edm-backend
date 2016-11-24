@@ -3,7 +3,7 @@ defmodule EdmBackend.Repo.Migrations.AddFilesTable do
 
   def change do
     create table(:files, primary_key: false) do
-      add :id, :uuid, primary_key: true
+      add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
 
       add :filepath, :text
       add :size, :integer
@@ -17,5 +17,10 @@ defmodule EdmBackend.Repo.Migrations.AddFilesTable do
 
       timestamps
     end
+
+    execute """
+      ALTER TABLE files
+      ADD CONSTRAINT unique_files_per_source UNIQUE (source_id, filepath);
+    """
   end
 end

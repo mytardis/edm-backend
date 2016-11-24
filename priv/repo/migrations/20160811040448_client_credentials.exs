@@ -3,7 +3,7 @@ defmodule EdmBackend.Repo.Migrations.Credentials do
 
   def change do
     create table(:credentials, primary_key: false) do
-      add :id, :uuid, primary_key: true
+      add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
       add :auth_provider, :string, size: 255
       add :remote_id, :string, size: 255
       add :extra_data, :map
