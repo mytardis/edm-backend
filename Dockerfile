@@ -1,8 +1,9 @@
-FROM elixir:1.2
+FROM elixir:1.3
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get update && apt-get install -y \
     postgresql-client \
-    nodejs
+    nodejs \
+    && apt-get clean
 COPY . /code/
 WORKDIR /code
 RUN mix local.hex --force
