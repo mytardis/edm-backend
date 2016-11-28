@@ -19,6 +19,7 @@ defmodule EdmBackend.Web do
   def model do
     quote do
       use Ecto.Schema
+      use Calecto.Schema, usec: true
 
       import Ecto
       import Ecto.Changeset
@@ -27,7 +28,7 @@ defmodule EdmBackend.Web do
       # Ensure uuid primary keys are used for all models
       @primary_key {:id, :binary_id, autogenerate: true}
       @foreign_key_type :binary_id
-      
+
     end
   end
 

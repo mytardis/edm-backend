@@ -1,10 +1,12 @@
 defmodule EdmBackend.File do
   use EdmBackend.Web, :model
   alias EdmBackend.Destination
+  alias EdmBackend.File
   alias EdmBackend.FileTransfer
+  alias EdmBackend.Repo
   alias EdmBackend.Source
 
-  schema "file" do
+  schema "files" do
     field :filepath, :string  # relative path
 
     # file stats
@@ -38,6 +40,59 @@ defmodule EdmBackend.File do
     timestamps
   end
 
-  @required ~w(filepath size mtime)a
+  @allowed ~w(filepath size mode atime mtime ctime birthtime source_id)a
+  @required ~w(filepath size mtime source_id)a
 
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> validate_required(@required)
+  end
+
+  def get_or_create(source, file_info) do
+    # try to find file
+    query = from f in File,
+      where: f.source_id == ^(source.id) and
+        f.filepath == ^(file_info.filepath),
+      select: f
+    require IEx
+    #IEx.pry
+    case Repo.one(query) do
+      nil ->
+        # create new file and prompt upload
+        file_info = Map.put(file_info, :source_id, source.id)
+        {:ok, new_file} = Repo.insert(File.changeset(%File{}, file_info))
+        Enum.map(source.destinations, fn(dest) ->
+          Repo.insert(
+              FileTransfer.changeset(%FileTransfer{}, %{
+                transfer_status: "new",
+                file_id: new_file.id,
+                destination_id: dest.id,
+              }))
+          end)
+        {:ok, new_file}
+      file ->
+        # if found, devise action
+        file = Repo.preload(file, :file_transfers)
+        # case file.file_transfer do
+        #   nil ->
+        case file.file_transfers do
+          [] ->
+            Enum.map(source.destinations, fn(dest) ->
+              Repo.insert(
+                  FileTransfer.changeset(%FileTransfer{}, %{
+                    transfer_status: "new",
+                    file_id: file.id,
+                    destination_id: dest.id,
+                  }))
+              end)
+            # new transfers
+            {:ok, file}
+          transfers ->
+            # existing transfers mean no action
+            {:ok, file}
+        end
+      {:error, error} ->
+        {:error, error}
+    end
+  end
 end

@@ -3,7 +3,7 @@ defmodule EdmBackend.Repo.Migrations.Groups do
 
   def change do
     create table(:groups, primary_key: false) do
-      add :id, :uuid, primary_key: true
+      add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
       add :name, :string, size: 50
       add :description, :string, size: 255
       add :parent_id, references(:groups, type: :uuid, on_delete: :delete_all)
