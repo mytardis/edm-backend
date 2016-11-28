@@ -21,15 +21,10 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
   end
 
   def find(client, name) do
-    query = from s in Source,
-      where: s.owner_id == ^(client.id) and s.name == ^(name),
-      preload: :destinations,
-      select: s
-    case Repo.one(query) do
-      nil -> {:error, "Source name #{name} not found"}
-      source ->
-        Repo.preload(source, :destinations)
-        {:ok, source}
-    end
+    Source.find(client, name)
+  end
+
+  def get_or_create(client, source_info) do
+    Source.get_or_create(client, source_info)
   end
 end

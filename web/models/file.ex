@@ -8,6 +8,7 @@ defmodule EdmBackend.File do
 
   schema "files" do
     field :filepath, :string  # relative path
+    field :filepath_md5, :string
 
     # file stats
     # node stat output, annotated
@@ -41,11 +42,25 @@ defmodule EdmBackend.File do
   end
 
   @allowed ~w(filepath size mode atime mtime ctime birthtime source_id)a
-  @required ~w(filepath size mtime source_id)a
+  @required ~w(filepath filepath_md5 size mtime source_id)a
 
-  def changeset(model, params \\ %{}) do
-    model |> cast(params, @allowed)
-          |> validate_required(@required)
+  def compute_filepath_hash(file) do
+    require IEx
+    # IEx.pry
+    case Map.get(file, :filepath_md5) do
+      nil ->
+        md5 = Base.encode16(:erlang.md5(file.changes.filepath), case: :lower)
+        %{file | changes: Map.put(file.changes, :filepath_md5, md5)}
+      _ ->
+        file
+    end
+  end
+
+  def changeset(file, params \\ %{}) do
+    file
+    |> cast(params, @allowed)
+    |> compute_filepath_hash
+    |> validate_required(@required)
   end
 
   def get_or_create(source, file_info) do

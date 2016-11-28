@@ -105,6 +105,7 @@ defmodule EdmBackend.GraphQL.Types do
   node object :source do
     field :name, :string
     field :fstype, :string
+    field :settings, :map
 
     connection field :files, node_type: :file do
       resolve fn pagination_args, %{source: source} ->
@@ -167,6 +168,8 @@ defmodule EdmBackend.GraphQL.Types do
 
   input_object :source_input_object do
     field :name, :string
+    field :fstype, :string
+    field :settings, :map
   end
 
   input_object :file_input_object do
