@@ -19,6 +19,6 @@ defmodule EdmBackend.Repo.Migrations.AddFilesTable do
       timestamps
     end
 
-    create unique_index(:files, [:source_id, :filepath_md5])
+    # create unique_index(:files, [:source_id, :filepath_md5])
   end
 end

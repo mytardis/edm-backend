@@ -45,10 +45,7 @@ defmodule EdmBackend.CurrentClientTest do
     assert_data(
       query,
       %{"currentClient" => %{
-        "sources" => [%{
-            "name" => "bla",
-            "destinations" => [],
-        }],
+        "sources" => [],
         "hosts" => []
         }},
       client)
