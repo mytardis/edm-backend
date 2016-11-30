@@ -68,6 +68,8 @@ defmodule EdmBackend.GraphQL.Schema do
                 {:error, error}
             end
         end
+        _, _ ->
+          {:error, "Not logged in"}
       end
     end
 

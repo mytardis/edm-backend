@@ -24,5 +24,33 @@ defmodule EdmBackend.CurrentClientTest do
     assert_data(query, %{"currentClient" => %{"name" => "test client"}}, client)
   end
 
-
+  test "current client empty settings", context do
+    client = context[:client]
+    query = """
+      query currentClient {
+        currentClient {
+          sources {
+            name
+            destinations {
+              base
+              name
+            }
+          }
+          hosts {
+            name
+          }
+        }
+      }
+    """
+    assert_data(
+      query,
+      %{"currentClient" => %{
+        "sources" => [%{
+            "name" => "bla",
+            "destinations" => [],
+        }],
+        "hosts" => []
+        }},
+      client)
+  end
 end

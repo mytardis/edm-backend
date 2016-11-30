@@ -11,26 +11,48 @@ defmodule EdmBackend.GraphQLCase do
       import Ecto.Query
       import EdmBackend.ModelCase
 
+      defp _run_query(query, client \\ nil) do
+        {query, variables} = case Poison.decode(query) do
+          {:ok, %{"query" => decoded_query, "variables" => variables}} ->
+            {decoded_query, variables}
+          {:ok, %{"query" => decoded_query}} ->
+            {decoded_query, %{}}
+          {:error, _} ->
+            {query, %{}}
+        end
+        {:ok, result} = case client do
+          nil ->
+            Absinthe.run(query, EdmBackend.GraphQL.Schema,
+              variables: variables)
+          _ ->
+            Absinthe.run(query, EdmBackend.GraphQL.Schema,
+              context: %{current_resource: %Client{} = client},
+              variables: variables)
+        end
+        case result do
+          %{errors: errors} ->
+            {:ok, %{errors: errors, data: %{}}}
+          %{errors: errors, data: data} ->
+            {:ok, %{errors: errors, data: data}}
+          %{data: data} ->
+            {:ok, %{data: data}}
+        end
+      end
+
       defp assert_data(query, data) do
-        assert {:ok, %{data: data}} == Absinthe.run(
-            query, EdmBackend.GraphQL.Schema)
+        assert {:ok, %{data: data}} == _run_query(query)
       end
 
       defp assert_data(query, data, client) do
-        assert {:ok, %{data: data}} == Absinthe.run(
-            query, EdmBackend.GraphQL.Schema,
-            context: %{current_resource: %Client{} = client})
+        assert {:ok, %{data: data}} == _run_query(query, client)
       end
 
       defp assert_errors(query, errors) do
-        assert {:ok, %{errors: errors, data: %{}}} == Absinthe.run(
-            query, EdmBackend.GraphQL.Schema)
+        assert {:ok, %{errors: errors, data: %{}}} == _run_query(query)
       end
 
       defp assert_errors(query, errors, client) do
-        assert {:ok, %{error: errors, data: %{}}} == Absinthe.run(
-            query, EdmBackend.GraphQL.Schema,
-            context: %{current_resource: %Client{} = client})
+        assert {:ok, %{error: errors, data: %{}}} == _run_query( query, client)
       end
     end
   end
