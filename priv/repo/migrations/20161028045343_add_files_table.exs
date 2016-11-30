@@ -6,7 +6,7 @@ defmodule EdmBackend.Repo.Migrations.AddFilesTable do
       add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
 
       add :filepath, :text, null: false
-      add :filepath_md5, :string, size: 32, null: false
+      # add :filepath_md5, :string, size: 32, null: false
       add :size, :integer, null: false
       add :mode, :integer
       add :atime, :datetime
