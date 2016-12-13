@@ -8,6 +8,13 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     {:ok, [%{filepath: "blafile"}] |> Relay.Connection.from_list(args)}
   end
 
+  def find(%{id: id}) do
+    case Repo.get(File, id) do
+      nil -> {:error, "File id #{id} not found"}
+      file -> {:ok, file}
+    end
+  end
+
   def find(source, filepath) do
     {:ok, %{filepath: filepath}}
   end

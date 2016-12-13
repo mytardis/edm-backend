@@ -1,5 +1,6 @@
 defmodule EdmBackend.File do
   use EdmBackend.Web, :model
+  require Logger
   alias EdmBackend.Destination
   alias EdmBackend.File
   alias EdmBackend.FileTransfer
@@ -41,73 +42,61 @@ defmodule EdmBackend.File do
     timestamps
   end
 
-  @allowed ~w(filepath size mode atime mtime ctime birthtime source_id)a
-  @required ~w(filepath size mtime source_id)a
-
-  # def compute_filepath_hash(file) do
-  #   require IEx
-  #   # IEx.pry
-  #   case Map.get(file, :filepath_md5) do
-  #     nil ->
-  #       md5 = Base.encode16(:erlang.md5(file.changes.filepath), case: :lower)
-  #       %{file | changes: Map.put(file.changes, :filepath_md5, md5)}
-  #     _ ->
-  #       file
-  #   end
-  # end
+  @allowed ~w(filepath size mtime mode atime ctime birthtime)a
+  @required ~w(filepath size mtime)a
 
   def changeset(file, params \\ %{}) do
     file
     |> cast(params, @allowed)
-    # |> compute_filepath_hash
+    |> cast_assoc(:source, required: true)
     |> validate_required(@required)
+  end
+
+  def create_file_transfers(destinations, file, status \\ "new")
+
+  def create_file_transfers([], file, status) do
+    # Do nothing
+  end
+
+  def create_file_transfers([dest|tail], file, status) do
+    %FileTransfer{file: file, destination: dest}
+      |> FileTransfer.changeset(%{transfer_status: status})
+      |> Repo.insert
+    create_file_transfers(tail, file, status)
   end
 
   def get_or_create(source, file_info) do
     # try to find file
     query = from f in File,
-      where: f.source_id == ^(source.id) and
-        f.filepath == ^(file_info.filepath),
-      select: f
-    require IEx
-    #IEx.pry
+      where: f.source_id == ^source.id,
+      where: f.filepath == ^file_info.filepath,
+      preload: :file_transfers
+
+    source = source |> Repo.preload(:destinations)
+
     case Repo.one(query) do
       nil ->
         # create new file and prompt upload
-        file_info = Map.put(file_info, :source_id, source.id)
-        {:ok, new_file} = Repo.insert(File.changeset(%File{}, file_info))
-        Enum.map(source.destinations, fn(dest) ->
-          Repo.insert(
-              FileTransfer.changeset(%FileTransfer{}, %{
-                transfer_status: "new",
-                file_id: new_file.id,
-                destination_id: dest.id,
-              }))
-          end)
+        {:ok, new_file} = %File{source: source}
+          |> File.changeset(file_info)
+          |> Repo.insert
+
+        create_file_transfers(source.destinations, new_file)
         {:ok, new_file}
+
+      {:error, error} ->
+        {:error, error}
+
       file ->
-        # if found, devise action
-        file = Repo.preload(file, :file_transfers)
-        # case file.file_transfer do
-        #   nil ->
         case file.file_transfers do
           [] ->
-            Enum.map(source.destinations, fn(dest) ->
-              Repo.insert(
-                  FileTransfer.changeset(%FileTransfer{}, %{
-                    transfer_status: "new",
-                    file_id: file.id,
-                    destination_id: dest.id,
-                  }))
-              end)
+            create_file_transfers(source.destinations, file)
             # new transfers
             {:ok, file}
-          transfers ->
+          _transfers ->
             # existing transfers mean no action
             {:ok, file}
         end
-      {:error, error} ->
-        {:error, error}
     end
   end
 end

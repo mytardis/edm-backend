@@ -5,6 +5,7 @@ defmodule EdmBackend.Host do
   alias EdmBackend.Source
   alias EdmBackend.Host
   alias EdmBackend.Client
+  alias EdmBackend.Group
 
   schema "hosts" do
     field :name, :string
@@ -18,12 +19,22 @@ defmodule EdmBackend.Host do
     timestamps
   end
 
+  @allowed ~w(name transfer_method settings)a
+  @required ~w(name transfer_method settings)a
+
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> cast_assoc(:group, required: true)
+          |> validate_required(@required)
+  end
+
   def all_hosts(client) do
     query = from h in Host,
       join: d in Destination,
       join: s in Source,
-      join: c in Client,
-      where: h.id == d.host_id and d.source_id == s.id and s.owner_id == c.id,
+      where: h.id == d.host_id,
+      where: d.source_id == s.id,
+      where: s.owner_id == ^client.id,
       select: h
     Repo.all(query)
   end

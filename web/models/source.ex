@@ -19,32 +19,29 @@ defmodule EdmBackend.Source do
     timestamps
   end
 
-  @allowed ~w(name fstype settings owner_id)a
-  @required ~w(name fstype owner_id)a
+  @allowed ~w(name fstype settings)a
+  @required ~w(name fstype)a
 
   def changeset(source, params \\ %{}) do
     source
     |> cast(params, @allowed)
+    |> cast_assoc(:owner, required: true)
     |> validate_required(@required)
   end
 
   def all_sources(client) do
     query = from s in Source,
-      join: c in Client,
-      where: s.owner_id == c.id,
-      select: s
+      where: s.owner_id == ^client.id
     Repo.all(query)
   end
 
   def find(client, name) do
     query = from s in Source,
-      where: s.owner_id == ^(client.id) and s.name == ^(name),
-      preload: :destinations,
-      select: s
+      where: s.owner_id == ^client.id and s.name == ^name,
+      preload: :destinations
     case Repo.one(query) do
       nil -> {:error, "Source name #{name} not found"}
       source ->
-        Repo.preload(source, :destinations)
         {:ok, source}
     end
   end
@@ -54,8 +51,7 @@ defmodule EdmBackend.Source do
       {:ok, source} ->
         {:ok, source}
       {:error, _} ->
-        source_info = Map.put(source_info, :owner_id, client.id)
-        Repo.insert(Source.changeset(%Source{}, source_info))
+        %Source{owner: client} |> Source.changeset(source_info) |> Repo.insert
     end
   end
 end

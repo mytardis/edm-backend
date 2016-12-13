@@ -8,10 +8,9 @@ defmodule EdmBackend.FileMutationTest do
       name: "test client",
     })
     {:ok, owner} = Repo.insert owner
-    source = %Source{} |> Source.changeset(%{
+    source = %Source{owner: owner} |> Source.changeset(%{
       name: "test source",
-      fstype: "POSIX",
-      owner_id: owner.id,
+      fstype: "POSIX"
     })
     {:ok, source} = Repo.insert source
     [client: owner, source: source]

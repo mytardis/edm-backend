@@ -1,12 +1,10 @@
 defmodule EdmBackend.Destination do
   use EdmBackend.Web, :model
   alias EdmBackend.Destination
-  alias EdmBackend.File
-  alias EdmBackend.FileTransfer
-  alias EdmBackend.Group
   alias EdmBackend.Host
-  alias EdmBackend.Repo
   alias EdmBackend.Source
+  alias EdmBackend.FileTransfer
+  alias EdmBackend.Repo
 
   schema "destinations" do
     field :base, :string  # path in destination
@@ -19,11 +17,19 @@ defmodule EdmBackend.Destination do
     timestamps
   end
 
+  @allowed ~w(base)a
+  @required ~w(base)a
+
+  def changeset(model, params \\ %{}) do
+    model |> cast(params, @allowed)
+          |> cast_assoc(:host, required: true)
+          |> cast_assoc(:source, required: true)
+          |> validate_required(@required)
+  end
+
   def all_destinations(source) do
-    query = from s in Source,
-      join: d in Destination,
-      where: d.source_id == s.id,
-      select: d
+    query = from d in Destination,
+      where: d.source_id == ^source.id
     Repo.all(query)
   end
 end
