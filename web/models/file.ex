@@ -28,10 +28,10 @@ defmodule EdmBackend.File do
     #  birthtime: 2013-06-05T06:40:25.000Z }  # creation time or last modified time (fs dependent)
     field :size, :integer
     field :mode, :integer  # needs to be interpreted platform specifically
-    field :atime, Ecto.DateTime
-    field :mtime, Ecto.DateTime
-    field :ctime, Ecto.DateTime
-    field :birthtime, Ecto.DateTime
+    field :atime, Calecto.DateTimeUTC
+    field :mtime, Calecto.DateTimeUTC
+    field :ctime, Calecto.DateTimeUTC
+    field :birthtime, Calecto.DateTimeUTC
 
     belongs_to :source, Source
 
