@@ -54,20 +54,15 @@ defmodule EdmBackend.GraphQL.Schema do
         field :file_id, :string
       end
       resolve fn %{source: %{name: source_name}, file: file_info},
-                 %{context: %{current_resource: client}} ->
-        case client do
-          nil ->
-            {:error, "not authorised"}
-          client ->
-            # get source by client and name, get file by source and file info
-            case Resolver.Source.find(client, source_name) do
-              {:ok, source} ->
-                {:ok, file} = Resolver.File.get_or_create(source, file_info)
-                {:ok, %{file_id: file.id, file: file}}
-              {:error, error} ->
-                {:error, error}
-            end
-        end
+        %{context: %{current_resource: client}} ->
+          # get source by client and name, get file by source and file info
+          case Resolver.Source.find(client, source_name) do
+            {:ok, source} ->
+              {:ok, file} = Resolver.File.get_or_create(source, file_info)
+              {:ok, %{file_id: file.id, file: file}}
+            {:error, error} ->
+              {:error, error}
+          end
         _, _ ->
           {:error, "Not logged in"}
       end
@@ -81,14 +76,11 @@ defmodule EdmBackend.GraphQL.Schema do
         field :source, type: :source
       end
       resolve fn %{source: source_info},
-                 %{context: %{current_resource: client}} ->
-        case client do
-          nil ->
-            {:error, "not authorised"}
-          client ->
-            {:ok, source} = Resolver.Source.get_or_create(client, source_info)
-            {:ok, %{source: source}}
-        end
+        %{context: %{current_resource: client}} ->
+          {:ok, source} = Resolver.Source.get_or_create(client, source_info)
+          {:ok, %{source: source}}
+        _, _ ->
+          {:error, "Not logged in"}
       end
     end
 
