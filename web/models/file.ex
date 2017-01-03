@@ -60,7 +60,7 @@ defmodule EdmBackend.File do
 
   def create_file_transfers([dest|tail], file, status) do
     %FileTransfer{file: file, destination: dest}
-      |> FileTransfer.changeset(%{transfer_status: status})
+      |> FileTransfer.changeset(%{status: status})
       |> Repo.insert
     create_file_transfers(tail, file, status)
   end

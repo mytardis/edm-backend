@@ -6,7 +6,7 @@ defmodule EdmBackend.FileTransfer do
   alias EdmBackend.Destination
 
   schema "file_transfers" do
-    field :transfer_status, :string  # maybe an enum?
+    field :status, :string  # maybe an enum?
     field :bytes_transferred, :integer
 
     belongs_to :file, File
@@ -15,8 +15,8 @@ defmodule EdmBackend.FileTransfer do
     timestamps
   end
 
-  @allowed ~w(transfer_status bytes_transferred)a
-  @required ~w(transfer_status)a
+  @allowed ~w(status bytes_transferred)a
+  @required ~w(status)a
 
   def changeset(model, params \\ %{}) do
     model |> cast(params, @allowed)
