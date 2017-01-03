@@ -64,7 +64,7 @@ defmodule EdmBackend.FileTransferTest do
       file: context[:file1],
       destination: context[:destination1]
     } |> FileTransfer.changeset(%{
-      transfer_status: "new"
+      status: "new"
     })
 
     # Everything
@@ -72,7 +72,7 @@ defmodule EdmBackend.FileTransferTest do
       file: context[:file1],
       destination: context[:destination1]
     } |> FileTransfer.changeset(%{
-      transfer_status: "new",
+      status: "new",
       bytes_transferred: 100
     })
 
@@ -88,12 +88,12 @@ defmodule EdmBackend.FileTransferTest do
     file_transfer2 = %FileTransfer{
       file: context[:file1]
     } |> FileTransfer.changeset(%{
-      transfer_status: "new"
+      status: "new"
     })
     file_transfer3 = %FileTransfer{
       destination: context[:destination1]
     } |> FileTransfer.changeset(%{
-      transfer_status: "new"
+      status: "new"
     })
 
     refute file_transfer1.valid?
