@@ -107,14 +107,14 @@ defmodule EdmBackend.FileTest do
     refute file4.valid?
   end
 
-  test "get_or_create\\2 creates a file that doesn't exist", context do
+  test "create_or_update\\2 creates a file that doesn't exist", context do
     filename = "/a/random/file.txt"
 
     query = from f in File, where: f.filepath == ^filename, select: count(f.id)
 
     assert Repo.one(query) == 0
 
-    {:ok, _new_file} = File.get_or_create(context[:source], %{
+    {:ok, _new_file} = File.create_or_update(context[:source], %{
       filepath: filename,
       size: 100,
       mtime: DateTime.utc_now()
@@ -123,16 +123,16 @@ defmodule EdmBackend.FileTest do
     assert Repo.one(query) == 1
   end
 
-  test "get_or_create\\2 returns a file that already exists", context do
+  test "create_or_update\\2 returns a file that already exists", context do
     filename = "/a/random/file1.txt"
 
-    {:ok, new_file} = File.get_or_create(context[:source], %{
+    {:ok, new_file} = File.create_or_update(context[:source], %{
       filepath: filename,
       size: 100,
       mtime: DateTime.utc_now()
     })
 
-    {:ok, existing_file} = File.get_or_create(context[:source], %{
+    {:ok, existing_file} = File.create_or_update(context[:source], %{
       filepath: filename,
       size: 100,
       mtime: DateTime.utc_now()
@@ -150,7 +150,7 @@ defmodule EdmBackend.FileTest do
 
     source = context[:source] |> Repo.preload(:destinations)
 
-    File.create_file_transfers(source.destinations, file)
+    File.add_file_transfers(source.destinations, file)
 
     query = from ft in FileTransfer,
       where: ft.file_id == ^file.id,

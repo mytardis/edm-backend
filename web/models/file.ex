@@ -25,8 +25,10 @@ defmodule EdmBackend.File do
     #  blocks: 8,       # number of blocks
     #  atime: 2016-10-26T04:56:40.000Z,  # last accessed time
     #  mtime: 2013-06-05T06:40:25.000Z,  # last modified content time
-    #  ctime: 2016-10-26T04:56:40.000Z,  # last modified content or metadata time
-    #  birthtime: 2013-06-05T06:40:25.000Z }  # creation time or last modified time (fs dependent)
+    #  ctime: 2016-10-26T04:56:40.000Z,  # last modified content or
+    # metadata time
+    #  birthtime: 2013-06-05T06:40:25.000Z }  # creation time or
+    # last modified time (fs dependent)
     field :size, :integer
     field :mode, :integer  # needs to be interpreted platform specifically
     field :atime, Calecto.DateTimeUTC
@@ -52,25 +54,40 @@ defmodule EdmBackend.File do
     |> validate_required(@required)
   end
 
-  def create_file_transfers(destinations, file, status \\ "new")
+  def add_file_transfers(destinations, file, status \\ "new")
 
-  def create_file_transfers([], file, status) do
+  def add_file_transfers([], file, status) do
     # Do nothing
   end
 
-  def create_file_transfers([dest|tail], file, status) do
+  def add_file_transfers([dest|tail], file, status) do
     %FileTransfer{file: file, destination: dest}
       |> FileTransfer.changeset(%{status: status})
       |> Repo.insert
-    create_file_transfers(tail, file, status)
+    add_file_transfers(tail, file, status)
   end
 
-  def get_or_create(source, file_info) do
+  @doc """
+  first add missing file transfers then remove superfluous ones
+  leave completed file transfers as record
+  """
+  def update_file_transfers(destinations, file) do
+    add_file_transfers(destinations, file)
+    Enum.map(file.file_transfers, fn(ft) ->
+      if ! (ft.status == "complete" or
+            Enum.any?(destinations, &(&1.id == ft.destination_id))) do
+        FileTransfer.delete(ft)
+      end
+    end)
+  end
+
+  def create_or_update(source, file_info) do
     # try to find file
     query = from f in File,
       where: f.source_id == ^source.id,
       where: f.filepath == ^file_info.filepath,
-      preload: :file_transfers
+      preload: :file_transfers,
+      preload: :source
 
     source = source |> Repo.preload(:destinations)
 
@@ -80,23 +97,20 @@ defmodule EdmBackend.File do
         {:ok, new_file} = %File{source: source}
           |> File.changeset(file_info)
           |> Repo.insert
-
-        create_file_transfers(source.destinations, new_file)
+        new_file = new_file |> Repo.preload(:file_transfers)
+        add_file_transfers(source.destinations, new_file)
         {:ok, new_file}
 
       {:error, error} ->
         {:error, error}
 
       file ->
-        case file.file_transfers do
-          [] ->
-            create_file_transfers(source.destinations, file)
-            # new transfers
-            {:ok, file}
-          _transfers ->
-            # existing transfers mean no action
-            {:ok, file}
-        end
+        # file exists, update with new information
+        {:ok, file} = file
+          |> File.changeset(file_info)
+          |> Repo.update
+        update_file_transfers(source.destinations, file)
+        {:ok, file}
     end
   end
 end
