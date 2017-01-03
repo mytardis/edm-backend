@@ -5,7 +5,7 @@ defmodule EdmBackend.Repo.Migrations.AddFileTransfersTable do
     create table(:file_transfers, primary_key: false) do
       add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
 
-      add :transfer_status, :string, size: 20
+      add :status, :string, size: 20
       add :bytes_transferred, :integer
 
       add :file_id, references(:files, type: :uuid)
