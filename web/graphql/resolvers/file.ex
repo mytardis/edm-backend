@@ -19,10 +19,10 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     {:ok, %{filepath: filepath}}
   end
 
-  def get_or_create(source, file) do
+  def create_or_update(source, file) do
     # require IEx
     # IEx.pry
-    File.get_or_create(source, file)
+    File.create_or_update(source, file)
     # new_file = Repo.insert(File.changeset(File, Map.put(file, :source, source)))
     # {:ok, %{file: new_file}}
   end

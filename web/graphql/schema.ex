@@ -44,7 +44,7 @@ defmodule EdmBackend.GraphQL.Schema do
   end
 
   mutation do
-    payload field :get_or_create_file do
+    payload field :create_or_update_file do
       input do
         field :source, :source_input_object
         field :file, :file_input_object
@@ -58,7 +58,29 @@ defmodule EdmBackend.GraphQL.Schema do
           # get source by client and name, get file by source and file info
           case Resolver.Source.find(client, source_name) do
             {:ok, source} ->
-              {:ok, file} = Resolver.File.get_or_create(source, file_info)
+              {:ok, file} = Resolver.File.create_or_update(source, file_info)
+              {:ok, %{file_id: file.id, file: file}}
+            {:error, error} ->
+              {:error, error}
+          end
+        _, _ ->
+          {:error, "Not logged in"}
+      end
+    end
+
+    payload field :update_file do
+      input do
+        field :source, :source_input_object
+        field :file, :file_input_object
+      end
+      output do
+        field :file, type: :file
+      end
+      resolve fn %{source: %{name: source_name}, file: file_info},
+                 %{context: %{current_resource: client}} ->
+          case Resolver.Source.find(client, source_name) do
+            {:ok, source} ->
+              {:ok, file} = Resolver.File.update(source, file_info)
               {:ok, %{file_id: file.id, file: file}}
             {:error, error} ->
               {:error, error}
@@ -82,10 +104,6 @@ defmodule EdmBackend.GraphQL.Schema do
         _, _ ->
           {:error, "Not logged in"}
       end
-    end
-
-    payload field :update_file do
-
     end
 
     payload field :delete_file do

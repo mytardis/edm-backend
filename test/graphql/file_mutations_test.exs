@@ -29,8 +29,8 @@ defmodule EdmBackend.FileMutationTest do
        }
     file_info_json = Poison.encode!(file_info)
     query = """
-{"query": "mutation getOrCreateFile($input: GetOrCreateFileInput!) {
-  getOrCreateFile(input: $input) {
+{"query": "mutation createOrUpdateFile($input: CreateOrUpdateFileInput!) {
+  createOrUpdateFile(input: $input) {
             clientMutationId
             file {
               filepath
@@ -53,8 +53,8 @@ defmodule EdmBackend.FileMutationTest do
 }
     """
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "Field `getOrCreateFile': Not logged in"}])
-    assert_data(query, %{"getOrCreateFile" => %{
+      message: "Field `createOrUpdateFile': Not logged in"}])
+    assert_data(query, %{"createOrUpdateFile" => %{
       "clientMutationId" => "123",
       "file" => file_info,
        }}, client)

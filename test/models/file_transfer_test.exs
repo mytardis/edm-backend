@@ -105,7 +105,7 @@ defmodule EdmBackend.FileTransferTest do
     file = context[:file1]
     destinations = [context[:destination1], context[:destination2]]
 
-    File.create_file_transfers(destinations, file)
+    File.add_file_transfers(destinations, file)
 
     file_transfers = file |> FileTransfer.get_transfers_for_file |> Repo.preload(:destination)
     destination_bases = for ft <- file_transfers, do: ft.destination.base
