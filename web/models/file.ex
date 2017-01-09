@@ -76,22 +76,35 @@ defmodule EdmBackend.File do
     Enum.map(file.file_transfers, fn(ft) ->
       if ! (ft.status == "complete" or
             Enum.any?(destinations, &(&1.id == ft.destination_id))) do
-        FileTransfer.delete(ft)
+        ft |> Repo.delete!
       end
     end)
   end
 
-  def create_or_update(source, file_info) do
-    # try to find file
-    query = from f in File,
+  defp get_file_query(source, file_info) do
+    from f in File,
       where: f.source_id == ^source.id,
       where: f.filepath == ^file_info.filepath,
       preload: :file_transfers,
       preload: :source
+  end
+
+  def update(source, file_info) do
+    case get_file_query(source, file_info) |> Repo.one do
+      nil ->
+        {:error, "File does not exist"}
+      file ->
+        file |> File.changeset(file_info)
+             |> Repo.update
+    end
+  end
+
+  def create_or_update(source, file_info) do
 
     source = source |> Repo.preload(:destinations)
 
-    case Repo.one(query) do
+    # try to find file
+    case get_file_query(source, file_info) |> Repo.one do
       nil ->
         # create new file and prompt upload
         {:ok, new_file} = %File{source: source}
@@ -100,10 +113,6 @@ defmodule EdmBackend.File do
         new_file = new_file |> Repo.preload(:file_transfers)
         add_file_transfers(source.destinations, new_file)
         {:ok, new_file}
-
-      {:error, error} ->
-        {:error, error}
-
       file ->
         # file exists, update with new information
         {:ok, file} = file

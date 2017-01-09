@@ -80,8 +80,12 @@ defmodule EdmBackend.GraphQL.Schema do
                  %{context: %{current_resource: client}} ->
           case Resolver.Source.find(client, source_name) do
             {:ok, source} ->
-              {:ok, file} = Resolver.File.update(source, file_info)
-              {:ok, %{file_id: file.id, file: file}}
+              case Resolver.File.update(source, file_info) do
+                {:ok, file} ->
+                  {:ok, %{file_id: file.id, file: file}}
+                {:error, error} ->
+                  {:error, error}
+              end
             {:error, error} ->
               {:error, error}
           end
