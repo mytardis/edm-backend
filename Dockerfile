@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 COPY . /code/
 WORKDIR /code
-ENV DATABASE_ADAPTER Elixir.Ecto.Adapters.Postgres
 RUN mix local.hex --force
+RUN mix local.rebar --force
 RUN mix deps.get
 RUN mix deps.compile
 RUN mix compile
