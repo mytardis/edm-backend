@@ -88,7 +88,7 @@ defmodule EdmBackend.FileMutationTest do
     }
     query = file_info |> create_or_update_file_query
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "Field `createOrUpdateFile': Not logged in"}])
+      message: "In field \"createOrUpdateFile\": Not logged in"}])
     assert_data(query, %{"createOrUpdateFile" => %{
       "clientMutationId" => "123",
       "file" => file_info,
@@ -110,9 +110,9 @@ defmodule EdmBackend.FileMutationTest do
     }
     query = file_info |> update_file_query
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "Field `updateFile': Not logged in"}])
+      message: "In field \"updateFile\": Not logged in"}])
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "Field `updateFile': File does not exist"}], client)
+      message: "In field \"updateFile\": File does not exist"}], client)
 
     # Now create the file...
     query = file_info |> create_or_update_file_query

@@ -14,7 +14,7 @@ defmodule EdmBackend.Destination do
     has_many :file_transfers, FileTransfer
     has_many :files, through: [:file_transfers, :file]
 
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(base)a

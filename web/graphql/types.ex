@@ -3,7 +3,6 @@ defmodule EdmBackend.GraphQL.Types do
   use Absinthe.Schema.Notation
   use Absinthe.Relay.Schema.Notation
   alias EdmBackend.GraphQL.Resolver
-  alias EdmBackend.Repo
 
   @desc """
   This scalar contains arbitrary map data that does not have a predefined schema
@@ -19,7 +18,10 @@ defmodule EdmBackend.GraphQL.Types do
   end
 
   scalar :datetime do
-    parse &Calendar.DateTime.Parse.rfc3339_utc/1
+    parse fn(input) ->
+      %{value: value} = input
+      Calendar.DateTime.Parse.rfc3339_utc(value)
+    end
     serialize &Calendar.DateTime.Format.rfc3339/1
   end
 
@@ -33,18 +35,6 @@ defmodule EdmBackend.GraphQL.Types do
   connection node_type: :group
   node object :group do
     field :name, non_null(:string)
-    field :parent, :group do
-      resolve fn
-        _, %{source: group} ->
-          group |> Resolver.Group.get_parent
-      end
-    end
-    connection field :children, node_type: :group do
-      resolve fn
-        pagination_args, %{source: group} ->
-          Resolver.Group.list_children(pagination_args, group)
-      end
-    end
     connection field :members, node_type: :client do
       resolve fn
         pagination_args, %{source: group} ->
@@ -68,6 +58,7 @@ defmodule EdmBackend.GraphQL.Types do
 
   node object :destination do
     field :base, :string  # path in destination
+    field :name, :string
     field :host_id, type: :string do
       resolve fn _, %{source: destination} ->
         {:ok, %{id: id}} = Resolver.Host.find(%{destination: destination})
@@ -92,13 +83,11 @@ defmodule EdmBackend.GraphQL.Types do
     field :mtime, :datetime
     field :ctime, :datetime
     field :birthtime, :datetime
-    # has_many :file_transfers, FileTransfer
     connection field :file_transfers, node_type: :file_transfer do
       resolve fn pagination_args, %{source: file} ->
         Resolver.FileTransfer.list(pagination_args, file)
       end
     end
-    # many_to_many :destinations, Destination, join_through: FileTransfer
   end
 
   connection node_type: :source
@@ -133,12 +122,6 @@ defmodule EdmBackend.GraphQL.Types do
       resolve fn
         pagination_args, %{source: client} ->
           Resolver.Client.list_groups(pagination_args, client)
-      end
-    end
-    connection field :groups_flat, node_type: :group do
-      resolve fn
-        pagination_args, %{source: client} ->
-          Resolver.Client.list_groups_flat(pagination_args, client)
       end
     end
     connection field :credentials, node_type: :credential do

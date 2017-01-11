@@ -16,7 +16,7 @@ defmodule EdmBackend.Source do
     has_many :files, File
     has_many :destinations, Destination
 
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(name fstype settings)a

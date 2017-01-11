@@ -21,8 +21,8 @@ defmodule EdmBackend.AuthController do
   will redirect to the default auth provider.
   """
   def request(conn, params) do
-    params = params |> Map.put("provider", get_default_provider)
-    conn |> redirect(to: auth_path(conn, :request, get_default_provider, params))
+    params = params |> Map.put("provider", get_default_provider())
+    conn |> redirect(to: auth_path(conn, :request, get_default_provider(), params))
   end
 
   @doc """
@@ -38,7 +38,7 @@ defmodule EdmBackend.AuthController do
 
       provider = case params do
         %{"provider" => p} -> p
-        _ -> get_default_provider
+        _ -> get_default_provider()
       end
 
       oauth_request = %{

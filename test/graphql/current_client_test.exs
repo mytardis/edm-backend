@@ -20,7 +20,7 @@ defmodule EdmBackend.CurrentClientTest do
     }
     """
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-                            message: "Field `currentClient': Not logged in"}])
+                            message: "In field \"currentClient\": Not logged in"}])
     assert_data(query, %{"currentClient" => %{"name" => "test client"}}, client)
   end
 

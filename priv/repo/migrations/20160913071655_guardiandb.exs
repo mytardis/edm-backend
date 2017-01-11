@@ -3,7 +3,7 @@ defmodule EdmBackend.Repo.Migrations.GuardianDb do
 
   def up do
     create table(:guardian_tokens, primary_key: false) do
-      add :jti, :string, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :jti, :string, primary_key: true
       add :typ, :string
       add :aud, :string
       add :iss, :string
@@ -11,7 +11,7 @@ defmodule EdmBackend.Repo.Migrations.GuardianDb do
       add :exp, :bigint
       add :jwt, :text
       add :claims, :map
-      timestamps
+      timestamps()
     end
     create unique_index(:guardian_tokens, [:jti, :aud])
   end
