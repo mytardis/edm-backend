@@ -1,0 +1,21 @@
+version: '2'
+services:
+  db:
+    image: mariadb:latest
+    environment:
+        MYSQL_ROOT_PASSWORD: mysqltestpwd
+  web:
+    build: .
+    # working_dir: /code
+    command: bash test.sh
+    # volumes:
+    #   - .:/code
+    environment:
+      DATABASE_URL: ecto://root:mysqltestpwd@db/edm_backend_test
+      DATABASE_ADAPTER: Elixir.Ecto.Adapters.MySQL
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    links:
+      - db
