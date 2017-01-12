@@ -2,7 +2,6 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   alias Absinthe.Relay
   alias EdmBackend.Repo
   alias EdmBackend.File
-  alias EdmBackend.Source
 
   def list(args, client) do
     {:ok, [%{filepath: "blafile"}] |> Relay.Connection.from_list(args)}

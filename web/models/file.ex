@@ -41,7 +41,7 @@ defmodule EdmBackend.File do
     has_many :file_transfers, FileTransfer
     many_to_many :destinations, Destination, join_through: FileTransfer
 
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(filepath size mtime mode atime ctime birthtime)a
@@ -56,7 +56,7 @@ defmodule EdmBackend.File do
 
   def add_file_transfers(destinations, file, status \\ "new")
 
-  def add_file_transfers([], file, status) do
+  def add_file_transfers([], _file, _status) do
     # Do nothing
   end
 

@@ -2,8 +2,6 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
   alias Absinthe.Relay
   alias EdmBackend.Repo
   alias EdmBackend.Source
-  alias EdmBackend.Client
-  import Ecto.Query
 
   def list_sources(client) do
     {:ok, client |> Source.all_sources}

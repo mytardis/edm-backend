@@ -1,0 +1,21 @@
+version: '2'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+  web:
+    build: .
+    # working_dir: /code
+    command: bash test.sh
+    # volumes:
+    #   - .:/code
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@db/edm_backend_test
+      DATABASE_ADAPTER: Elixir.Ecto.Adapters.Postgres
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    links:
+      - db

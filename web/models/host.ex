@@ -4,7 +4,6 @@ defmodule EdmBackend.Host do
   alias EdmBackend.Destination
   alias EdmBackend.Source
   alias EdmBackend.Host
-  alias EdmBackend.Client
   alias EdmBackend.Group
 
   schema "hosts" do
@@ -16,7 +15,7 @@ defmodule EdmBackend.Host do
 
     has_many :destinations, Destination
 
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(name transfer_method settings)a

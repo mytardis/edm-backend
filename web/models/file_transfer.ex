@@ -12,7 +12,7 @@ defmodule EdmBackend.FileTransfer do
     belongs_to :file, File
     belongs_to :destination, Destination
 
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(status bytes_transferred)a

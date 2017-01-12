@@ -9,7 +9,7 @@ defmodule EdmBackend.GroupMembership do
   schema "group_memberships" do
     belongs_to :client, Client
     belongs_to :group, Group
-    timestamps
+    timestamps()
   end
 
   def changeset(model, params \\ %{}) do

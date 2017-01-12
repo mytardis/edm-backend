@@ -4,13 +4,13 @@ defmodule EdmBackend.Mixfile do
   def project do
     [app: :edm_backend,
      version: "0.0.1",
-     elixir: "~> 1.2",
+     elixir: "~> 1.4",
      elixirc_paths: elixirc_paths(Mix.env),
      compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     aliases: aliases,
-     deps: deps,
+     aliases: aliases(),
+     deps: deps(),
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: [coveralls: :test]]
   end
@@ -21,8 +21,9 @@ defmodule EdmBackend.Mixfile do
   def application do
     [mod: {EdmBackend, []},
      applications: [
-       :calendar,
        :flasked,
+       #:ecto,
+       :calendar,
        :phoenix,
        :phoenix_pubsub,
        :phoenix_html,
@@ -30,6 +31,7 @@ defmodule EdmBackend.Mixfile do
        :logger,
        :gettext,
        :phoenix_ecto,
+       :mariaex,
        :postgrex,
        :absinthe_plug,
        :absinthe_relay,
@@ -52,6 +54,7 @@ defmodule EdmBackend.Mixfile do
     [{:phoenix, "~> 1.2.0"},
      {:phoenix_pubsub, "~> 1.0"},
      {:phoenix_ecto, "~> 3.0"},
+     {:mariaex, "~> 0.7.3"},
      {:postgrex, ">= 0.11.2"},
      {:phoenix_html, "~> 2.6"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
@@ -61,18 +64,18 @@ defmodule EdmBackend.Mixfile do
 
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
-     {:ueberauth, "~> 0.3"},
-     {:ueberauth_google, "~> 0.3"},
+     {:ueberauth, "~> 0.4"},
+     {:ueberauth_google, "~> 0.5"},
      {:ueberauth_edm, git: "https://github.com/mytardis/ueberauth_edm.git"},
-     {:guardian, "~> 0.12.0"},
+     {:guardian, "~> 0.14.0"},
      {:guardian_db, "~> 0.7"},
 
      # GraphQL support
-     {:absinthe_plug, "~> 1.1"},
-     {:absinthe_relay, "~> 0.9.4"},
+     {:absinthe_plug, "~> 1.2"},
+     {:absinthe_relay, "~> 1.2.0"},
      {:poison, "~> 2.1.0"},
      {:cors_plug, "~> 1.1"}, # Needed for cross-site access
-     {:calendar, "~> 0.16.1"},
+     {:calendar, "~> 0.16.0"},
      {:calecto, "~> 0.16.0"},
 
      # Watch configured tasks

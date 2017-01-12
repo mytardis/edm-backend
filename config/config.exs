@@ -46,7 +46,7 @@ config :guardian_db, GuardianDb,
 
 # Global database config
 config :edm_backend, EdmBackend.Repo,
-  adapter: Ecto.Adapters.Postgres,
+  adapter: String.to_atom(System.get_env("DATABASE_ADAPTER") || "Elixir.Ecto.Adapters.MySQL"),
   url: {:system, "DATABASE_URL"}
 
 # Import environment specific config. This must remain at the bottom

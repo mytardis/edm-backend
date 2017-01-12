@@ -20,7 +20,7 @@ defmodule EdmBackend.Client do
     has_many :group_memberships, GroupMembership
     has_many :groups, through: [:group_memberships, :group]
     has_many :sources, Source, foreign_key: :owner_id
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(name attributes)a
@@ -31,7 +31,9 @@ defmodule EdmBackend.Client do
           |> validate_required(@required)
   end
 
-  def get_or_create(provider, client_info, extra_data \\ %{}) when is_atom(provider) do
+  def get_or_create(provider, client_info, extra_data \\ %{})
+
+  def get_or_create(provider, client_info, extra_data) when is_atom(provider) do
     get_or_create(Atom.to_string(provider), client_info, extra_data)
   end
 
@@ -80,40 +82,11 @@ defmodule EdmBackend.Client do
   end
 
   @doc """
-  Generates a flattened list of groups that a client belongs to
-  """
-  def all_groups_flat(client) do
-    %{groups: groups} = client |> Repo.preload(:groups)
-
-    groups = groups |> Enum.map(fn(g) ->
-      g |> Group.load_parents
-    end)
-
-    all_groups_flat groups, %MapSet{}
-  end
-
-  defp all_groups_flat([%Group{parent: parent} = head|tail], accumulator) when is_nil(parent) do
-    all_groups_flat(tail, accumulator |> MapSet.put(head))
-  end
-
-  defp all_groups_flat([head|tail], accumulator) do
-    all_groups_flat(tail ++ [head.parent], accumulator |> MapSet.put(head))
-  end
-
-  defp all_groups_flat([], accumulator) do
-    accumulator |> MapSet.to_list
-  end
-
-  @doc """
-  Generates a nested list of groups that a client belongs to, maintaining any
-  hierarchical group relationships
+  Generates a list of groups that a client belongs to
   """
   def all_groups(client) do
     client |> Repo.preload(:groups)
            |> Map.get(:groups)
-           |> Enum.map(fn(g) ->
-             g |> Group.load_parents
-         end)
   end
 
   def all_sources(client) do
@@ -128,10 +101,6 @@ defmodule EdmBackend.Client do
     client |> member_of?(gid)
   end
 
-  def member_of?([%Group{parent: parent}|tail], target_gid) when is_nil(parent) do
-    member_of? tail, target_gid
-  end
-
   def member_of?([], _target_gid) do
     false
   end
@@ -140,8 +109,8 @@ defmodule EdmBackend.Client do
     true
   end
 
-  def member_of?([head|tail], target_gid) do
-    member_of? tail ++ [head.parent], target_gid
+  def member_of?([_head|tail], target_gid)  do
+    member_of?(tail, target_gid)
   end
 
   def member_of?(client, gid) do

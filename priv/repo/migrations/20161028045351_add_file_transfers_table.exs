@@ -3,7 +3,7 @@ defmodule EdmBackend.Repo.Migrations.AddFileTransfersTable do
 
   def change do
     create table(:file_transfers, primary_key: false) do
-      add :id, :uuid, primary_key: true, default: fragment("uuid_generate_v4()")
+      add :id, :uuid, primary_key: true
 
       add :status, :string, size: 20
       add :bytes_transferred, :integer
@@ -11,7 +11,7 @@ defmodule EdmBackend.Repo.Migrations.AddFileTransfersTable do
       add :file_id, references(:files, type: :uuid)
       add :destination_id, references(:destinations, type: :uuid)
 
-      timestamps
+      timestamps()
     end
   end
 end

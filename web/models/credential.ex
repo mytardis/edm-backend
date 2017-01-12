@@ -10,7 +10,7 @@ defmodule EdmBackend.Credential do
     field :remote_id, :string
     field :extra_data, :map
     belongs_to :client, Client
-    timestamps
+    timestamps()
   end
 
   @allowed ~w(auth_provider remote_id extra_data)a
