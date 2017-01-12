@@ -3,8 +3,8 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   alias EdmBackend.Repo
   alias EdmBackend.File
 
-  def list(args, client) do
-    {:ok, [%{filepath: "blafile"}] |> Relay.Connection.from_list(args)}
+  def list(args, source) do
+    {:ok, source |> File.list |> Relay.Connection.from_query(args)}
   end
 
   def find(%{id: id}) do
@@ -15,7 +15,11 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   end
 
   def find(source, filepath) do
-    {:ok, %{filepath: filepath}}
+    query = source |> File.get_file_query(%{filepath: filepath})
+    case Repo.get(query) do
+      nil -> {:error, "File with path #{filepath} does not exist"}
+      file -> {:ok, file}
+    end
   end
 
   def create_or_update(source, file) do

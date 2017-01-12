@@ -81,12 +81,19 @@ defmodule EdmBackend.File do
     end)
   end
 
-  defp get_file_query(source, file_info) do
+  def get_file_query(source) do
     from f in File,
       where: f.source_id == ^source.id,
-      where: f.filepath == ^file_info.filepath,
       preload: :file_transfers,
       preload: :source
+  end
+
+  def get_file_query(source, file_info) do
+    get_file_query(source) |> where([f], f.filepath == ^file_info.filepath)
+  end
+
+  def list(source) do
+    source |> get_file_query |> Repo.all
   end
 
   def update(source, file_info) do
