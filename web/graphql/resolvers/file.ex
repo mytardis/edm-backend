@@ -16,8 +16,8 @@ defmodule EdmBackend.GraphQL.Resolver.File do
 
   def find(source, filepath) do
     query = source |> File.get_file_query(%{filepath: filepath})
-    case Repo.get(query) do
-      nil -> {:error, "File with path #{filepath} does not exist"}
+    case Repo.one(query) do
+      nil -> {:error, "File #{filepath} not found"}
       file -> {:ok, file}
     end
   end

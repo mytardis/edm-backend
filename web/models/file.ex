@@ -88,8 +88,8 @@ defmodule EdmBackend.File do
       preload: :source
   end
 
-  def get_file_query(source, file_info) do
-    get_file_query(source) |> where([f], f.filepath == ^file_info.filepath)
+  def get_file_query(source, %{filepath: filepath}) do
+    get_file_query(source) |> where([f], f.filepath == ^filepath)
   end
 
   def list(source) do
