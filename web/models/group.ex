@@ -15,7 +15,6 @@ defmodule EdmBackend.Group do
     field :description, :string
     has_many :group_memberships, GroupMembership, on_delete: :delete_all
     has_many :clients, through: [:group_memberships, :client]
-    has_many :destinations, Destination
     timestamps()
   end
 
@@ -34,6 +33,18 @@ defmodule EdmBackend.Group do
   def members(group) do
     %{clients: members} = group |> Repo.preload(:clients)
     members
+  end
+
+  def add_member(group, client) do
+    %GroupMembership{group: group, client: client }
+      |> GroupMembership.changeset()
+      |> Repo.insert
+  end
+
+  def remove_member(group, client) do
+    %GroupMembership{group: group, client: client }
+      |> GroupMembership.changeset()
+      |> Repo.delete
   end
 
 end

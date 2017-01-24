@@ -70,6 +70,9 @@ defmodule EdmBackend.Mixfile do
      {:guardian, "~> 0.14.0"},
      {:guardian_db, "~> 0.7"},
 
+     # Permissions
+     {:canada, "~> 1.0.1"},
+
      # GraphQL support
      {:absinthe_plug, "~> 1.2"},
      {:absinthe_relay, "~> 1.2.0"},
