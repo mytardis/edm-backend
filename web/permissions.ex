@@ -1,9 +1,8 @@
+alias EdmBackend.Repo
+
 defimpl Canada.Can, for: EdmBackend.Client do
     alias EdmBackend.Client
-    alias EdmBackend.Credential
     alias EdmBackend.Role
-    alias EdmBackend.Ownership
-    alias EdmBackend.Repo
     alias EdmBackend.Source
 
     @roles %{

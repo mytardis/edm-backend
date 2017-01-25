@@ -60,6 +60,17 @@ defmodule EdmBackend.DestinationModelTest do
       ]
   end
 
+  test "destination belongs to the same group as the host", context do
+    {:ok, destination} = %Destination{
+      host: context[:host1],
+      source: context[:source1]
+    } |> Destination.changeset(%{
+      base: "/destination1/source1/"
+    }) |> Repo.insert
+    [destination_group] = Group.get_groups_for(destination)
+    assert destination_group.name == "test group"
+  end
+
   test "valid destination values", context do
     destination = %Destination{
       host: context[:host1],

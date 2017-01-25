@@ -58,6 +58,16 @@ defmodule EdmBackend.FileTransferTest do
     ]
   end
 
+  test "file transfers belong to the same group as the client", context do
+    {:ok, file_transfer} = %FileTransfer{
+      file: context[:file1],
+      destination: context[:destination1]
+    } |> FileTransfer.changeset(%{
+      status: "new"
+    }) |> Repo.insert
+    [%{name: "test client"}] = Group.get_groups_for(file_transfer)
+  end
+
   test "valid file_transfer values", context do
     # Minimal
     file_transfer1 = %FileTransfer{

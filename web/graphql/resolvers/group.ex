@@ -1,11 +1,11 @@
 defmodule EdmBackend.GraphQL.Resolver.Group do
   import Canada, only: [can?: 2]
   alias Absinthe.Relay
-  alias EdmBackend.Group
+  alias EdmBackend.Client
   alias EdmBackend.Repo
 
   def list_members(args, group, viewer) do
-    all_clients = for client <- group |> Group.members do
+    all_clients = for client <- group |> Client.members do
       if viewer |> can?(view(client)) do
         client
       end

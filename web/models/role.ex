@@ -5,7 +5,6 @@ defmodule EdmBackend.Role do
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
   alias EdmBackend.Role
-  alias EdmBackend.Ownership
 
   schema "roles" do
     field :name, :string
@@ -20,15 +19,35 @@ defmodule EdmBackend.Role do
   @required ~w(name type)a
 
   def changeset(model, params \\ %{}) do
-    model |> Ecto.Changeset.cast(params, @allowed)
+    model |> cast(params, @allowed)
           |> cast_assoc(:source_group, required: true)
           |> cast_assoc(:target_group, required: true)
           |> validate_required(@required)
           |> unique_constraint(:type, name: :roles_type_source_group_id_target_group_id_index)
   end
 
-  def get_role_query(type, client, target) do
-    owner_group_ids = for g <- Ownership.of(target), do: g.id
+  def create(name, type, source_group, target_group, description \\ nil)
+
+  def create(name, type, source_group, target_group, description) when is_atom(type) do
+    create(name, Atom.to_string(type), source_group, target_group, description)
+  end
+
+  def create(name, type, source_group, target_group, description) when is_binary(source_group) and is_binary(target_group) do
+    {:ok, sg} = Group.get_by_name(source_group)
+    {:ok, tg} = Group.get_by_name(target_group)
+    create(name, type, sg, tg, description)
+  end
+
+  def create(name, type, source_group = %Group{}, target_group = %Group{}, description) do
+    %Role{source_group: source_group, target_group: target_group} |> Role.changeset(%{
+      name: name,
+      type: type,
+      description: description
+    }) |> Repo.insert
+  end
+
+  defp get_role_query(type, client, target) do
+    owner_group_ids = for g <- Group.get_groups_for(target), do: g.id
     from role in Role,
       join: group_memberships in GroupMembership,
       where: group_memberships.client_id == ^client.id,
@@ -48,7 +67,7 @@ defmodule EdmBackend.Role do
   def has_role?(role = %Role{}, client, target) do
     role = role |> Repo.preload(:source_group) |> Repo.preload(:target_group)
     Client.member_of?(client, role.source_group) and
-      Enum.any?(Ownership.of(target), fn(group) ->
+      Enum.any?(Group.get_groups_for(target), fn(group) ->
         group.id == role.target_group.id
       end)
   end

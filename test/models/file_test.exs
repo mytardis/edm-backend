@@ -64,6 +64,16 @@ defmodule EdmBackend.FileTest do
     [source1: source1, source2: source2]
   end
 
+  test "file belongs to same group as client", context do
+    {:ok, new_file} = File.create_or_update(context[:source1], %{
+      filepath: "test/file",
+      size: 100,
+      mtime: DateTime.utc_now()
+    })
+    [group] = Group.get_groups_for(new_file)
+    assert group.name == "test client"
+  end
+
   test "valid file values", context do
     # Minimal
     file1 = %File{source: context[:source1]} |> File.changeset(%{

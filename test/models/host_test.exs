@@ -137,4 +137,18 @@ defmodule EdmBackend.HostTest do
     assert host3.name in host_names_client2
   end
 
+  test "group correctly identified by Group module", context do
+    group = context[:group]
+    {:ok, host} = %Host{group: group} |> Host.changeset(%{
+      name: "host1",
+      transfer_method: "sftp",
+      settings: %{
+        host: "1some.host.edu.au",
+        private_key: "AAAAAAAA"
+      }
+    }) |> Repo.insert
+
+    assert [^group] = Group.get_groups_for(host)
+  end
+
 end

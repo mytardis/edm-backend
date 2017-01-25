@@ -3,6 +3,7 @@ defmodule EdmBackend.SourceModelTest do
   use EdmBackend.ModelCase
   alias EdmBackend.Source
   alias EdmBackend.Client
+  alias EdmBackend.Group
 
   setup do
     {:ok, owner1} = %Client{} |> Client.changeset(%{
@@ -107,5 +108,13 @@ defmodule EdmBackend.SourceModelTest do
 
     id = source.id
     assert {:ok, %{id: ^id}} = Source.get_or_create(context[:owner1], %{name: "source8"})
+  end
+
+  test "sources belong to the same group as the client", context do
+    {:ok, source} = %Source{owner: context[:owner1]} |> Source.changeset(%{
+      name: "source",
+      fstype: "POSIX"
+    }) |> Repo.insert
+    assert [%{name: "test client1"}] = Group.get_groups_for(source)
   end
 end

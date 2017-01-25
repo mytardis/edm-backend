@@ -9,6 +9,11 @@ defmodule EdmBackend.Group do
   alias EdmBackend.Destination
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
+  alias EdmBackend.Host
+  alias EdmBackend.Client
+  alias EdmBackend.Source
+  alias EdmBackend.File
+  alias EdmBackend.FileTransfer
 
   schema "groups" do
     field :name, :string
@@ -27,24 +32,43 @@ defmodule EdmBackend.Group do
           |> unique_constraint(:name)
   end
 
-  @doc """
-  Returns a list of clients who are members of this group
-  """
-  def members(group) do
-    %{clients: members} = group |> Repo.preload(:clients)
-    members
+  def get_by_name(name) do
+    q = from group in Group,
+      where: group.name == ^name
+    case Repo.one(q) do
+      nil ->
+        {:error, "Group not found"}
+      group ->
+        {:ok, group}
+    end
   end
 
-  def add_member(group, client) do
-    %GroupMembership{group: group, client: client }
-      |> GroupMembership.changeset()
-      |> Repo.insert
+  def get_groups_for(%Group{} = group) do
+    [group]
   end
 
-  def remove_member(group, client) do
-    %GroupMembership{group: group, client: client }
-      |> GroupMembership.changeset()
-      |> Repo.delete
+  def get_groups_for(%Host{} = host) do
+    [host |> Repo.preload(:group) |> Map.get(:group)]
+  end
+
+  def get_groups_for(%Client{} = client) do
+    Client.all_groups(client)
+  end
+
+  def get_groups_for(%Source{} = source) do
+    get_groups_for(source |> Repo.preload(:owner) |> Map.get(:owner))
+  end
+
+  def get_groups_for(%Destination{} = destination) do
+    get_groups_for(destination |> Repo.preload(:host) |> Map.get(:host))
+  end
+
+  def get_groups_for(%File{} = file) do
+    get_groups_for(file |> Repo.preload(:source) |> Map.get(:source))
+  end
+
+  def get_groups_for(%FileTransfer{} = file_transfer) do
+    get_groups_for(file_transfer |> Repo.preload(:file) |> Map.get(:file))
   end
 
 end
