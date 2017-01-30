@@ -27,6 +27,9 @@ defmodule EdmBackend.Host do
           |> validate_required(@required)
   end
 
+  @doc """
+  Returns a list of all hosts for a given client
+  """
   def all_hosts(client) do
     query = from h in Host,
       join: d in Destination,

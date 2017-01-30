@@ -9,8 +9,8 @@ defmodule EdmBackend.Repo.Migrations.Roles do
       add :description, :string, size: 255
       add :type, :string, size: 20
 
-      add :source_group_id, references(:groups, type: :uuid)
-      add :target_group_id, references(:groups, type: :uuid)
+      add :source_group_id, references(:groups, type: :uuid, on_delete: :delete_all)
+      add :target_group_id, references(:groups, type: :uuid, on_delete: :delete_all)
 
       timestamps()
     end

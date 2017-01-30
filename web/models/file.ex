@@ -54,6 +54,9 @@ defmodule EdmBackend.File do
     |> validate_required(@required)
   end
 
+  @doc """
+  Creates file transfer records for each destination for a given file
+  """
   def add_file_transfers(destinations, file, status \\ "new")
 
   def add_file_transfers([], _file, _status) do
@@ -68,8 +71,9 @@ defmodule EdmBackend.File do
   end
 
   @doc """
-  first add missing file transfers then remove superfluous ones
-  leave completed file transfers as record
+  Updates file transfer records by first adding missing file transfers, then
+  removing superfluous ones, leaving completed file transfers as a historical
+  record
   """
   def update_file_transfers(destinations, file) do
     add_file_transfers(destinations, file)
@@ -81,6 +85,9 @@ defmodule EdmBackend.File do
     end)
   end
 
+  @doc """
+  Returns a query to retrieve all files for a source
+  """
   def get_file_query(source) do
     from f in File,
       where: f.source_id == ^source.id,
@@ -88,31 +95,46 @@ defmodule EdmBackend.File do
       preload: :source
   end
 
+  @doc """
+  Returns a query to retrieve a file with the given path for a given source
+  """
   def get_file_query(source, %{filepath: filepath}) do
     get_file_query(source) |> where([f], f.filepath == ^filepath)
   end
 
+  @doc """
+  Returns a list of all files for the given source
+  """
   def list(source) do
     source |> get_file_query |> Repo.all
   end
 
+  @doc """
+  Updates an existing file from a given source. Returns an error if the file
+  does not exist.
+  """
   def update(source, file_info) do
     case get_file_query(source, file_info) |> Repo.one do
       nil ->
         {:error, "File does not exist"}
       file ->
-        file |> File.changeset(file_info)
-             |> Repo.update
+        {:ok, file} = file |> File.changeset(file_info)
+                           |> Repo.update
+        update_file_transfers(source.destinations, file)
+        {:ok, file}
     end
   end
 
+  @doc """
+  Creates or updates a file in a source. See update/2
+  """
   def create_or_update(source, file_info) do
 
     source = source |> Repo.preload(:destinations)
 
     # try to find file
-    case get_file_query(source, file_info) |> Repo.one do
-      nil ->
+    case File.update(source, file_info) do
+      {:error, _} ->
         # create new file and prompt upload
         {:ok, new_file} = %File{source: source}
           |> File.changeset(file_info)
@@ -120,12 +142,7 @@ defmodule EdmBackend.File do
         new_file = new_file |> Repo.preload(:file_transfers)
         add_file_transfers(source.destinations, new_file)
         {:ok, new_file}
-      file ->
-        # file exists, update with new information
-        {:ok, file} = file
-          |> File.changeset(file_info)
-          |> Repo.update
-        update_file_transfers(source.destinations, file)
+      {:ok, file} ->
         {:ok, file}
     end
   end

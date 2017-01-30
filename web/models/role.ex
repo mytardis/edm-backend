@@ -26,16 +26,25 @@ defmodule EdmBackend.Role do
           |> unique_constraint(:type, name: :roles_type_source_group_id_target_group_id_index)
   end
 
+  @doc """
+  Creates a role relationship between two groups. The type can be specified as
+  an atom or string, and the groups can be specified either as a string
+  representing the group's name, or the group struct itself.
+  """
   def create(name, type, source_group, target_group, description \\ nil)
 
   def create(name, type, source_group, target_group, description) when is_atom(type) do
     create(name, Atom.to_string(type), source_group, target_group, description)
   end
 
-  def create(name, type, source_group, target_group, description) when is_binary(source_group) and is_binary(target_group) do
+  def create(name, type, source_group, target_group, description) when is_binary(source_group) do
     {:ok, sg} = Group.get_by_name(source_group)
+    create(name, type, sg, target_group, description)
+  end
+
+  def create(name, type, source_group, target_group, description) when is_binary(target_group) do
     {:ok, tg} = Group.get_by_name(target_group)
-    create(name, type, sg, tg, description)
+    create(name, type, source_group, tg, description)
   end
 
   def create(name, type, source_group = %Group{}, target_group = %Group{}, description) do
@@ -46,6 +55,8 @@ defmodule EdmBackend.Role do
     }) |> Repo.insert
   end
 
+  # Returns a query that lists roles of a given type that the client has with
+  # respect to the given target entity
   defp get_role_query(type, client, target) do
     owner_group_ids = for g <- Group.get_groups_for(target), do: g.id
     from role in Role,
@@ -56,6 +67,10 @@ defmodule EdmBackend.Role do
       where: role.type == ^type
   end
 
+  @doc """
+  True if the client has the given role with respect to the given target entity.
+  The role type may be either an atom or string.
+  """
   def has_role?(type, client, target) when is_atom(type) do
     has_role?(Atom.to_string(type), client, target)
   end

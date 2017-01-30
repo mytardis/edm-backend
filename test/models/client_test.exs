@@ -38,6 +38,8 @@ defmodule EdmBackend.ClientModelTest do
     client |> Client.remove_member(group0)
     refute client |> Client.member_of?(group0)
     refute client |> Client.member_of?("a group")
+
+    assert {:error, _} = client |> Client.remove_member("test")
   end
 
   test "default client group when name conflicts has suffix" do

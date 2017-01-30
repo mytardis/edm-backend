@@ -31,6 +31,9 @@ defmodule EdmBackend.Client do
           |> validate_required(@required)
   end
 
+  @doc """
+  Gets or creates a user for given auth provider
+  """
   def get_or_create(provider, client_info, extra_data \\ %{})
 
   def get_or_create(provider, client_info, extra_data) when is_atom(provider) do
@@ -78,7 +81,10 @@ defmodule EdmBackend.Client do
       |> Repo.insert
   end
 
-  def create_default_group(%Client{name: name} = client, group_suffix \\ 0) do
+  # Creates a default froup for a client, adding them to that group.
+  # This function is typically used when creating new users to enforce the
+  # one group per client rule.
+  defp create_default_group(%Client{name: name} = client, group_suffix \\ 0) do
     group_name = case group_suffix do
       0 ->
         name
@@ -117,28 +123,58 @@ defmodule EdmBackend.Client do
   end
 
   @doc """
-  Returns a list of clients who are members of this group
+  Returns a list of clients who are members of a group. The group may be
+  specified as either a group struct or string representing the group's name.
   """
-  def members(group) do
+  def members(%Group{} = group) do
     %{clients: members} = group |> Repo.preload(:clients)
     members
   end
 
+  def members(group) do
+    {:ok, group} = Group.get_by_name(group)
+    members(group)
+  end
+
+  @doc """
+  Adds a client to a group. The group may be specified as either a group struct
+  or string representing the group's name
+  """
   def add_member(%Client{} = client, %Group{} = group) do
     %GroupMembership{group: group, client: client }
       |> GroupMembership.changeset()
       |> Repo.insert
   end
 
-  def remove_member(%Client{id: client_id}, %Group{id: group_id}) do
-    query = from m in GroupMembership,
-              where: m.client_id == ^client_id,
-              where: m.group_id == ^group_id
-    query |> Repo.delete_all
+  def add_member(client, group) do
+    {:ok, group} = Group.get_by_name(group)
+    client |> add_member(group)
   end
 
   @doc """
-  Determines whether the given client is a member of the specified group
+  Removes a client to a group. The group may be specified as either a group
+  struct or string representing the group's name
+  """
+  def remove_member(%Client{id: client_id} = client, %Group{id: group_id}) do
+    if length(all_groups(client)) < 2 do
+      {:error, "A client must have at least one group at all times"}
+    else
+      query = from m in GroupMembership,
+                where: m.client_id == ^client_id,
+                where: m.group_id == ^group_id
+      query |> Repo.delete_all
+    end
+  end
+
+  def remove_member(client, group) do
+    {:ok, group} = Group.get_by_name(group)
+    client |> remove_member(group)
+  end
+
+  @doc """
+  Determines whether the given client is a member of the specified group. The
+  group may be specified as either a group struct or string representing the
+  group's name
   """
   def member_of?(client, %Group{id: gid}) do
     client |> all_groups |> member_of?(gid)
@@ -160,7 +196,7 @@ defmodule EdmBackend.Client do
     member_of?(tail, target_gid)
   end
 
-  def member_of?(client, group_name) when is_binary(group_name) do
+  def member_of?(client, group_name) do
     group = Group |> where([g], g.name == ^group_name) |> Repo.one
     member_of?(client, group)
   end

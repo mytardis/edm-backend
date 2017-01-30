@@ -25,6 +25,9 @@ defmodule EdmBackend.FileTransfer do
           |> validate_required(@required)
   end
 
+  @doc """
+  Returns a list of all transfers for the given file
+  """
   def get_transfers_for_file(file) do
     query = from ft in FileTransfer,
       where: ft.file_id == ^file.id
