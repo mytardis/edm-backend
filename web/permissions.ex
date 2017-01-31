@@ -25,6 +25,16 @@ defimpl Canada.Can, for: EdmBackend.Client do
       end
     end
 
+    def can?(%Client{id: id}, :impersonate, %Client{id: id}) do
+      # Any client can be itself!
+      true
+    end
+
+    def can?(%Client{} = client, :impersonate, %Client{} = subject) do
+      # Admins can impersonate other clients
+      Role.has_role?(:admin, client, subject)
+    end
+
     def can?(client, action, subject) do
       Enum.any?(@roles, fn {role, permissions} ->
         action in permissions and Role.has_role?(role, client, subject)

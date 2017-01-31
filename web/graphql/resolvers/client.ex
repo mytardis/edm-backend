@@ -32,4 +32,13 @@ defmodule EdmBackend.GraphQL.Resolver.Client do
         end
     end
   end
+
+  def generate_token(client, viewer) do
+    if viewer |> can?(impersonate(client)) do
+      {:ok, jwt, full_claims} = Guardian.encode_and_sign(client, :access)
+      {:ok, jwt}
+    else
+      {:error, "Unauthorised to impersonate client"}
+    end
+  end
 end

@@ -140,6 +140,11 @@ defmodule EdmBackend.GraphQL.Types do
         Resolver.Source.find(client, name, viewer)
       end
     end
+    field :token, type: :string do
+      resolve fn _, get_viewer_and_source(viewer, client) ->
+        Resolver.Client.generate_token(client, viewer)
+      end
+    end
   end
 
   input_object :source_input_object do
