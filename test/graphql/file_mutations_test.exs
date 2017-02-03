@@ -120,8 +120,7 @@ defmodule EdmBackend.FileMutationTest do
   test "update a file", context do
     client = context[:client]
 
-    # This file should not exist
-    file_info = %{
+    current_file_info = %{
         "filepath" => "testfile4.txt",
         "atime" => "2013-06-05T06:40:25.000000Z",
         "birthtime" => "2013-06-05T06:40:25.000000Z",
@@ -143,7 +142,7 @@ defmodule EdmBackend.FileMutationTest do
     # Confirm that the updated file contains the updated parameters
     assert_data(query, %{"updateFile" => %{
       "clientMutationId" => "123",
-      "file" => Map.merge(file_info, new_file_info)
+      "file" => Map.merge(current_file_info, new_file_info)
       }}, client)
   end
 end
