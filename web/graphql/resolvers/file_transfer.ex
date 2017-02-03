@@ -11,15 +11,41 @@ defmodule EdmBackend.GraphQL.Resolver.FileTransfer do
     end
   end
 
-  def find(%{id: id}, viewer) do
+  def find(%{id: id}) do
     case Repo.get(FileTransfer, id) do
       nil -> {:error, "File transfer not found"}
-      file_transfer ->
+      file_transfer -> {:ok, file_transfer}
+    end
+  end
+
+  def find(%{id: id}, viewer) do
+    case find(%{id: id}) do
+      {:ok, file_transfer} ->
         if viewer |> can?(view(file_transfer)) do
           {:ok, file_transfer}
         else
           {:error, "Unauthorised to view file transfer"}
         end
+      {:error, error} -> {:error, error}
     end
+  end
+
+  def from_global_id(global_id, viewer \\ nil) do
+    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+      {:ok, %{type: :file_transfer, id: id}} ->
+        case viewer do
+          nil ->
+            find(%{id: id})
+          v ->
+            find(%{id: id}, v)
+        end
+      {:ok, %{type: _, id: id}} ->
+        {:error, "Invalid ID"}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def update(file_transfer, new_file_transfer, viewer) do
+    # TODO implement
   end
 end

@@ -12,15 +12,22 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     end
   end
 
-  def find(%{id: id}, viewer) do
+  def find(%{id: id}) do
     case Repo.get(File, id) do
       nil -> {:error, "File not found"}
-      file ->
+      file -> {:ok, file}
+    end
+  end
+
+  def find(%{id: id}, viewer) do
+    case find(%{id: id}) do
+      {:ok, file} ->
         if viewer |> can?(view(file)) do
           {:ok, file}
         else
           {:error, "Unauthorised to view file"}
         end
+      {:error, error} -> {:error, error}
     end
   end
 
@@ -37,6 +44,21 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     end
   end
 
+  def from_global_id(global_id, viewer \\ nil) do
+    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+      {:ok, %{type: :file, id: id}} ->
+        case viewer do
+          nil ->
+            find(%{id: id})
+          v ->
+            find(%{id: id}, v)
+        end
+      {:ok, %{type: _, id: id}} ->
+        {:error, "Invalid ID"}
+      {:error, error} -> {:error, error}
+    end
+  end
+
   def create_or_update(source, file, viewer) do
     if viewer |> can?(create(source)) and viewer |> can?(update(source)) do
       File.create_or_update(source, file)
@@ -45,15 +67,15 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     end
   end
 
-  def update(source, file, viewer) do
-    if viewer |> can?(update(source)) do
-      File.update(source, file)
+  def update(file, file_info, viewer) do
+    if viewer |> can?(update(file)) do
+      File.update(file, file_info)
     else
       {:error, "Unauthorised to update file in source"}
     end
   end
 
-  def delete(client, file, viewer) do
+  def delete(source, file, viewer) do
     # TODO implement this function
   end
 

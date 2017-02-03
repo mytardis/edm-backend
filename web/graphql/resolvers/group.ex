@@ -22,15 +22,37 @@ defmodule EdmBackend.GraphQL.Resolver.Group do
     {:ok, all_groups |> Relay.Connection.from_list(args)}
   end
 
-  def find(%{id: id}, viewer) do
+  def find(%{id: id}) do
     case Repo.get(Group, id) do
       nil -> {:error, "Group not found"}
-      group ->
+      group -> {:ok, group}
+    end
+  end
+
+  def find(%{id: id}, viewer) do
+    case find(%{id: id}) do
+      {:ok, group} ->
         if viewer |> can?(view(group)) do
           {:ok, group}
         else
           {:error, "Unauthorised to view group"}
         end
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def from_global_id(global_id, viewer \\ nil) do
+    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+      {:ok, %{type: :group, id: id}} ->
+        case viewer do
+          nil ->
+            find(%{id: id})
+          v ->
+            find(%{id: id}, v)
+        end
+      {:ok, %{type: _, id: id}} ->
+        {:error, "Invalid ID"}
+      {:error, error} -> {:error, error}
     end
   end
 

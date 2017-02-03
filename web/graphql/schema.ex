@@ -52,19 +52,19 @@ defmodule EdmBackend.GraphQL.Schema do
   mutation do
     payload field :create_or_update_file do
       input do
-        field :source, :source_input_object
+        field :source_id, :id
         field :file, :file_input_object
       end
       output do
-        field :file_id, :string
         field :file, type: :file
       end
-      resolve fn %{source: %{name: source_name}, file: file_info}, get_viewer(viewer) ->
-          # get source by client and name, get file by source and file info
-          case Resolver.Source.find(viewer, source_name, viewer) do
+      resolve fn %{source_id: source_id, file: file_info}, get_viewer(viewer) ->
+          case Resolver.Source.from_global_id(source_id, viewer) do
             {:ok, source} ->
-              {:ok, file} = Resolver.File.create_or_update(source, file_info, viewer)
-              {:ok, %{file_id: file.id, file: file}}
+              case Resolver.File.create_or_update(source, file_info, viewer) do
+                {:ok, file} -> {:ok, %{file: file}}
+                {:error, error} -> {:error, error}
+              end
             {:error, error} ->
               {:error, error}
           end
@@ -75,22 +75,43 @@ defmodule EdmBackend.GraphQL.Schema do
 
     payload field :update_file do
       input do
-        field :source, :source_input_object
+        field :file_id, non_null(:id)
         field :file, :file_input_object
       end
       output do
         field :file, type: :file
-        field :file_id, type: :string
       end
       resolve fn
-        %{source: %{name: source_name}, file: file_info}, get_viewer(viewer) ->
-          case Resolver.Source.find(viewer, source_name, viewer) do
-            {:ok, source} ->
-              case Resolver.File.update(source, file_info, viewer) do
-                {:ok, file} ->
-                  {:ok, %{file_id: file.id, file: file}}
-                {:error, error} ->
-                  {:error, error}
+        %{file_id: file_id, file: file_info}, get_viewer(viewer) ->
+          case Resolver.File.from_global_id(file_id) do
+            {:ok, file} ->
+              case Resolver.File.update(file, file_info, viewer) do
+                {:ok, file} -> {:ok, %{file: file}}
+                {:error, error} -> {:error, error}
+              end
+            {:error, error} -> {:error, error}
+          end
+        _, _ ->
+          {:error, @not_logged_in_error}
+      end
+    end
+
+    payload field :update_file_transfer do
+      input do
+        field :file_transfer_id, non_null(:id)
+        field :file_transfer, :file_transfer_input_object
+      end
+      output do
+        field :file_transfer, type: :file_transfer
+      end
+      resolve fn
+        %{file_transfer_id: file_transfer_id, file_transfer: new_file_transfer}, get_viewer(viewer) ->
+          case Resolver.FileTransfer.from_global_id(file_transfer_id) do
+            {:ok, file_transfer} ->
+              case Resolver.FileTransfer.update(file_transfer, new_file_transfer, viewer) do
+                {:ok, updated_file_transfer} ->
+                  {:ok, %{file_transfer: updated_file_transfer}}
+                {:error, error} -> {:error, error}
               end
             {:error, error} ->
               {:error, error}
@@ -122,37 +143,28 @@ defmodule EdmBackend.GraphQL.Schema do
 
     payload field :delete_file do
       input do
-        field :file_id, :string
+        field :file_id, non_null(:id)
       end
       output do
         field :file, type: :file
       end
       resolve fn
-        %{file: file}, get_viewer(viewer) ->
-          case Resolver.File.delete(viewer, file, viewer) do
+        %{file_id: file_id}, get_viewer(viewer) ->
+          case Resolver.File.from_global_id(file_id) do
             {:ok, file} ->
-              {:ok, %{file: file}}
-            {:error, error} ->
-              {:error, error}
+              case Resolver.File.delete(file, viewer) do
+                {:ok, file} ->
+                  {:ok, %{file: file}}
+                {:error, error} ->
+                  {:error, error}
+              end
+            {:error, error} -> {:error, error}
           end
         _, _ ->
           {:error, @not_logged_in_error}
       end
     end
 
-    #payload field :create_client do
-    #  input dof
-    #    field :uuid, non_null(:string)
-    #  end
-    #  output do
-    #    field :token, :string
-    #  end
-    #  resolve fn
-    #    %{input_data: input_data}, _ ->
-    #      # Some mutation side-effect here
-    #      {:ok, %{result: input_data * 2}}
-    #  end
-    #end
   end
 
 end

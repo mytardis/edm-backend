@@ -1,23 +1,36 @@
 defmodule EdmBackend.FileMutationTest do
   require Logger
   use EdmBackend.GraphQLCase
+  alias EdmBackend.Repo
   alias EdmBackend.Client
   alias EdmBackend.Source
+  alias EdmBackend.File
 
   setup do
-    owner = %Client{} |> Client.changeset(%{
+    {:ok, owner} = %Client{} |> Client.changeset(%{
       name: "test client",
-    })
-    {:ok, owner} = Repo.insert owner
-    source = %Source{owner: owner} |> Source.changeset(%{
+    }) |> Repo.insert
+
+    {:ok, source} = %Source{owner: owner} |> Source.changeset(%{
       name: "test source",
       fstype: "POSIX"
-    })
-    {:ok, source} = Repo.insert source
-    [client: owner, source: source]
+    }) |> Repo.insert
+
+    {:ok, file} = %File{source: source} |> File.changeset(%{
+      filepath: "testfile3.txt",
+      atime: "2013-06-05T06:40:25.000000Z",
+      birthtime: "2013-06-05T06:40:25.000000Z",
+      ctime: "2013-06-05T06:40:25.000000Z",
+      mode: 100644,
+      mtime: "2013-06-05T06:40:25.000000Z",
+      size: 12
+    }) |> Repo.insert
+
+    [client: owner, source: source, existing_file: file]
   end
 
-  defp create_or_update_file_query(file_info) do
+  defp create_or_update_file_query(file_info, source_id) do
+
     file_info_json = Poison.encode!(file_info)
 
     """
@@ -38,7 +51,7 @@ defmodule EdmBackend.FileMutationTest do
 "variables": {
   "input": {
     "clientMutationId": "123",
-    "source": {"name": "test source"},
+    "sourceId": "#{source_id}",
     "file": #{file_info_json}
   }
 }
@@ -46,7 +59,7 @@ defmodule EdmBackend.FileMutationTest do
     """
   end
 
-  defp update_file_query(file_info) do
+  defp update_file_query(file_info, id) do
     file_info_json = Poison.encode!(file_info)
 
     """
@@ -66,13 +79,21 @@ defmodule EdmBackend.FileMutationTest do
     }",
 "variables": {
   "input": {
+    "fileId": "#{id}",
     "clientMutationId": "123",
-    "source": {"name": "test source"},
     "file": #{file_info_json}
   }
 }
 }
     """
+  end
+
+  defp get_source_id(source) do
+    Absinthe.Relay.Node.to_global_id(:source, source.id, EdmBackend.GraphQL.Schema)
+  end
+
+  defp get_file_id(file) do
+    Absinthe.Relay.Node.to_global_id(:file, file.id, EdmBackend.GraphQL.Schema)
   end
 
   test "creating a file", context do
@@ -86,7 +107,8 @@ defmodule EdmBackend.FileMutationTest do
         "mtime" => "2013-06-05T06:40:25.000000Z",
         "size" => 12
     }
-    query = file_info |> create_or_update_file_query
+
+    query = file_info |> create_or_update_file_query(get_source_id(context[:source]))
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
       message: "In field \"createOrUpdateFile\": Not logged in"}])
     assert_data(query, %{"createOrUpdateFile" => %{
@@ -108,15 +130,6 @@ defmodule EdmBackend.FileMutationTest do
         "mtime" => "2013-06-05T06:40:25.000000Z",
         "size" => 12
     }
-    query = file_info |> update_file_query
-    assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "In field \"updateFile\": Not logged in"}])
-    assert_errors(query, [%{locations: [%{column: 0, line: 2}],
-      message: "In field \"updateFile\": File does not exist"}], client)
-
-    # Now create the file...
-    query = file_info |> create_or_update_file_query
-    {:ok, _result} = query |> EdmBackend.GraphQLCase.run_query(client)
 
     # Update the file...
     new_file_info = %{
@@ -124,7 +137,8 @@ defmodule EdmBackend.FileMutationTest do
         "mode" => 100777,
         "size" => 120
     }
-    query = new_file_info |> update_file_query
+
+    query = new_file_info |> update_file_query(get_file_id(context[:existing_file]))
 
     # Confirm that the updated file contains the updated parameters
     assert_data(query, %{"updateFile" => %{

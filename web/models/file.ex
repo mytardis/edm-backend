@@ -76,6 +76,7 @@ defmodule EdmBackend.File do
   record
   """
   def update_file_transfers(destinations, file) do
+    file = file |> Repo.preload(:file_transfers)
     add_file_transfers(destinations, file)
     Enum.map(file.file_transfers, fn(ft) ->
       if ! (ft.status == "complete" or
@@ -113,7 +114,7 @@ defmodule EdmBackend.File do
   Updates an existing file from a given source. Returns an error if the file
   does not exist.
   """
-  def update(source, file_info) do
+  def update(source = %Source{}, file_info) do
     case get_file_query(source, file_info) |> Repo.one do
       nil ->
         {:error, "File does not exist"}
@@ -123,6 +124,18 @@ defmodule EdmBackend.File do
         update_file_transfers(source.destinations, file)
         {:ok, file}
     end
+  end
+
+  @doc """
+  Updates a file with the map given in file_info
+  """
+  def update(file = %File{}, file_info) do
+    file = file |> Repo.preload(:source)
+    destinations = file.source |> Repo.preload(:destinations) |> Map.get(:destinations)
+    {:ok, file} = file |> changeset(file_info)
+                       |> Repo.update
+    update_file_transfers(destinations, file)
+    {:ok, file}
   end
 
   @doc """

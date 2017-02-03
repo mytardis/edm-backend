@@ -3,6 +3,7 @@ defimpl Canada.Can, for: EdmBackend.Client do
     alias EdmBackend.Client
     alias EdmBackend.Role
     alias EdmBackend.Source
+    alias EdmBackend.File
 
     @roles %{
       admin: [:view, :update, :create, :delete],
@@ -28,6 +29,11 @@ defimpl Canada.Can, for: EdmBackend.Client do
       else
         can_default?(client, action, source)
       end
+    end
+
+    def can?(client, action, file = %File{}) when action in [:view, :update, :create, :delete] do
+      source = file |> Repo.preload(:source) |> Map.get(:source)
+      can?(client, action, source)
     end
 
     @doc """

@@ -11,15 +11,37 @@ defmodule EdmBackend.GraphQL.Resolver.Destination do
     end
   end
 
-  def find(%{id: id}, viewer) do
+  def find(%{id: id}) do
     case Repo.get(Destination, id) do
       nil -> {:error, "Destination not found"}
-      destination ->
+      destination -> {:ok, destination}
+    end
+  end
+
+  def find(%{id: id}, viewer) do
+    case find(%{id: id}) do
+      {:ok, destination} ->
         if viewer |> can?(view(destination)) do
           {:ok, destination}
         else
           {:error, "Unauthorised to view destination"}
         end
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def from_global_id(global_id, viewer \\ nil) do
+    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+      {:ok, %{type: :destination, id: id}} ->
+        case viewer do
+          nil ->
+            find(%{id: id})
+          v ->
+            find(%{id: id}, v)
+        end
+      {:ok, %{type: _, id: id}} ->
+        {:error, "Invalid ID"}
+      {:error, error} -> {:error, error}
     end
   end
 end

@@ -1,6 +1,6 @@
 defmodule EdmBackend.GraphQL.Helper do
   alias EdmBackend.Client
-  
+
   @doc "Extracts the viewer client struct from the GraphQL context"
   defmacro get_viewer(viewer) do
     quote do

@@ -58,6 +58,11 @@ defmodule EdmBackend.GraphQL.Types do
   node object :destination do
     field :base, :string  # path in destination
     field :name, :string
+    field :host, type: :host do
+      resolve fn _, get_viewer_and_source(viewer, destination) ->
+        Resolver.Host.find(%{destination: destination}, viewer)
+      end
+    end
     field :host_id, type: :string do
       resolve fn _, get_viewer_and_source(viewer, destination) ->
         {:ok, %{id: id}} = Resolver.Host.find(%{destination: destination}, viewer)
@@ -68,7 +73,7 @@ defmodule EdmBackend.GraphQL.Types do
 
   connection node_type: :file_transfer
   node object :file_transfer do
-    field :transfer_status, :string
+    field :status, :string
     field :bytes_transferred, :integer
     field :destination, type: :destination
   end
@@ -161,5 +166,10 @@ defmodule EdmBackend.GraphQL.Types do
     field :mtime, :datetime
     field :ctime, :datetime
     field :birthtime, :datetime
+  end
+
+  input_object :file_transfer_input_object do
+    field :status, :string
+    field :bytes_transferred, :integer
   end
 end

@@ -13,16 +13,22 @@ defmodule EdmBackend.GraphQL.Resolver.Host do
     {:ok, all_hosts}
   end
 
-  def find(%{id: id}, viewer) do
+  def find(%{id: id}) do
     case Repo.get(Host, id) do
-      nil ->
-        {:error, "Host not found"}
-      host ->
+      nil -> {:error, "Host not found"}
+      host -> {:ok, host}
+    end
+  end
+
+  def find(%{id: id}, viewer) do
+    case find(%{id: id}) do
+      {:ok, host} ->
         if viewer |> can?(view(host)) do
           {:ok, host}
         else
           {:error, "Unauthorised to view host"}
         end
+      {:error, error} -> {:error, error}
     end
   end
 
@@ -32,6 +38,21 @@ defmodule EdmBackend.GraphQL.Resolver.Host do
       {:ok, host}
     else
       {:error, "Unauthorised to view host"}
+    end
+  end
+
+  def from_global_id(global_id, viewer \\ nil) do
+    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+      {:ok, %{type: :group, id: id}} ->
+        case viewer do
+          nil ->
+            find(%{id: id})
+          v ->
+            find(%{id: id}, v)
+        end
+      {:ok, %{type: _, id: id}} ->
+        {:error, "Invalid ID"}
+      {:error, error} -> {:error, error}
     end
   end
 end
