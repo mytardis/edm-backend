@@ -49,6 +49,7 @@ defmodule EdmBackend.GraphQL.Types do
     end
   end
 
+  connection node_type: :host
   node object :host do
     field :name, :string
     field :transfer_method, :string
@@ -80,6 +81,11 @@ defmodule EdmBackend.GraphQL.Types do
 
   connection node_type: :file
   node object :file do
+    field :source, type: :source do
+      resolve fn _, get_viewer_and_source(viewer, file) ->
+        Resolver.File.get_source(file, viewer)
+      end
+    end
     field :filepath, :string
     field :size, :integer
     field :mode, :integer
@@ -96,6 +102,11 @@ defmodule EdmBackend.GraphQL.Types do
 
   connection node_type: :source
   node object :source do
+    field :owner, :client do
+      resolve fn _, get_viewer_and_source(viewer, source) ->
+        Resolver.Source.get_owner(source, viewer)
+      end
+    end
     field :name, :string
     field :fstype, :string
     field :settings, :map
@@ -136,7 +147,7 @@ defmodule EdmBackend.GraphQL.Types do
     end
     field :hosts, list_of(:host) do
       resolve fn _args, get_viewer_and_source(viewer, client) ->
-        Resolver.Host.list_hosts(client, viewer)
+        Resolver.Host.list(client, viewer)
       end
     end
     field :source, type: :source do

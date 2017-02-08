@@ -4,6 +4,7 @@ defmodule EdmBackend.GraphQL.Schema do
   use Absinthe.Schema
   use Absinthe.Relay.Schema
   alias EdmBackend.GraphQL.Resolver
+  alias EdmBackend.Source
 
   import_types EdmBackend.GraphQL.Types
 
@@ -17,6 +18,14 @@ defmodule EdmBackend.GraphQL.Schema do
         pagination_args, get_viewer(viewer) ->
           Resolver.Client.list(pagination_args, viewer)
       end
+    end
+
+    @desc "Lists all hosts"
+    connection field :hosts, node_type: :host do
+      resolve fn
+        pagination_args, get_viewer(viewer) ->
+          Resolver.Host.list(pagination_args, viewer)
+        end
     end
 
     @desc "Shows information about the currently logged in client"
@@ -50,33 +59,34 @@ defmodule EdmBackend.GraphQL.Schema do
   end
 
   mutation do
+
     payload field :create_or_update_file do
       input do
-        field :source_id, :id
-        field :file, :file_input_object
+        field :client_id, :id
+        field :source, non_null(:source_input_object)
+        field :file, non_null(:file_input_object)
       end
       output do
         field :file, type: :file
       end
-      resolve fn %{source_id: source_id, file: file_info}, get_viewer(viewer) ->
-          case Resolver.Source.from_global_id(source_id, viewer) do
-            {:ok, source} ->
-              case Resolver.File.create_or_update(source, file_info, viewer) do
-                {:ok, file} -> {:ok, %{file: file}}
-                {:error, error} -> {:error, error}
-              end
-            {:error, error} ->
-              {:error, error}
+      resolve fn
+        %{client_id: client_id, source: source, file: file}, get_viewer(viewer) ->
+          case Resolver.Client.from_global_id(client_id) do
+            {:ok, client} ->
+              Resolver.File.create_or_update(client, file, source, viewer)
+            {:error, error} -> {:error, error}
           end
+        %{source: source, file: file}, get_viewer(viewer) ->
+          Resolver.File.create_or_update(viewer, file, source, viewer)
         _, _ ->
           {:error, @not_logged_in_error}
-      end
+        end
     end
 
     payload field :update_file do
       input do
         field :file_id, non_null(:id)
-        field :file, :file_input_object
+        field :file, non_null(:file_input_object)
       end
       output do
         field :file, type: :file
@@ -99,7 +109,7 @@ defmodule EdmBackend.GraphQL.Schema do
     payload field :update_file_transfer do
       input do
         field :file_transfer_id, non_null(:id)
-        field :file_transfer, :file_transfer_input_object
+        field :file_transfer, non_null(:file_transfer_input_object)
       end
       output do
         field :file_transfer, type: :file_transfer
@@ -123,16 +133,56 @@ defmodule EdmBackend.GraphQL.Schema do
 
     payload field :get_or_create_source do
       input do
-        field :source, :source_input_object
+        field :client_id, :id
+        field :source, non_null(:source_input_object)
       end
       output do
         field :source, type: :source
       end
       resolve fn
-        %{source: source_info}, get_viewer(viewer) ->
-          case Resolver.Source.get_or_create(viewer, source_info, viewer) do
+        %{client_id: client_id, source: source_info}, get_viewer(viewer) ->
+
+          # The client id defaults to the current client if not set
+          client_id = if not client_id do
+            {:ok, %{type: :client, id: id}} = Absinthe.Relay.Node.to_global_id(:client, viewer, EdmBackend.GraphQL.Schema)
+            id
+          else
+            client_id
+          end
+
+          case Resolver.Client.from_global_id(client_id) do
+            {:ok, client} ->
+              case Resolver.Source.get_or_create(client, source_info, viewer) do
+                {:ok, source} ->
+                  {:ok, %{source: source}}
+                {:error, error} ->
+                  {:error, error}
+              end
+            {:error, error} ->
+              {:error, error}
+          end
+        _, _ ->
+          {:error, @not_logged_in_error}
+      end
+    end
+
+    payload field :update_source do
+      input do
+        field :source_id, non_null(:id)
+        field :source, non_null(:source_input_object)
+      end
+      output do
+        field :source, type: :source
+      end
+      resolve fn
+        %{source_id: source_id, source: new_source}, get_viewer(viewer) ->
+          case Resolver.Source.from_global_id(source_id) do
             {:ok, source} ->
-              {:ok, %{source: source}}
+              case Resolver.Source.update(source, new_source, viewer) do
+                {:ok, updated_source} ->
+                  {:ok, %{source: updated_source}}
+                {:error, error} -> {:error, error}
+              end
             {:error, error} ->
               {:error, error}
           end

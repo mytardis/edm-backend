@@ -81,10 +81,12 @@ defmodule EdmBackend.Client do
       |> Repo.insert
   end
 
-  # Creates a default froup for a client, adding them to that group.
-  # This function is typically used when creating new users to enforce the
-  # one group per client rule.
-  defp create_default_group(%Client{name: name} = client, group_suffix \\ 0) do
+  @doc """
+  Creates a default froup for a client, adding them to that group.
+  This function is typically used when creating new users to enforce the
+  one group per client rule.
+  """
+  def create_default_group(%Client{name: name} = client, group_suffix \\ 0) do
     group_name = case group_suffix do
       0 ->
         name

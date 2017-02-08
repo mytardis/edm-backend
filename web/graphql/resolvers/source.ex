@@ -1,5 +1,6 @@
 defmodule EdmBackend.GraphQL.Resolver.Source do
   import Canada, only: [can?: 2]
+  require Logger
   alias EdmBackend.Repo
   alias EdmBackend.Source
   alias EdmBackend.Client
@@ -54,6 +55,15 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
     end
   end
 
+  def get_owner(source, viewer) do
+    client = source |> Repo.preload(:owner) |> Map.get(:owner)
+    if viewer |> can?(view(client)) do
+      {:ok, client}
+    else
+      {:error, "Unauthorised to view owner of source"}
+    end
+  end
+
   def from_global_id(global_id, viewer \\ nil) do
     case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
       {:ok, %{type: :source, id: id}} ->
@@ -74,6 +84,14 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
       Source.get_or_create(client, source_info)
     else
       {:error, "Unauthorised to create or update source"}
+    end
+  end
+
+  def update(source, new_source, viewer) do
+    if viewer |> can?(update(source)) do
+      Source.update(source, new_source)
+    else
+      {:error, "Unauthorised to update source"}
     end
   end
 end

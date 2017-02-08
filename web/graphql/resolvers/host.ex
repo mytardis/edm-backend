@@ -4,7 +4,7 @@ defmodule EdmBackend.GraphQL.Resolver.Host do
   alias EdmBackend.Host
   alias EdmBackend.Destination
 
-  def list_hosts(client, viewer) do
+  def list(client, viewer) do
     all_hosts = for host <- client |> Host.all_hosts do
       if viewer |> can?(view(host)) do
         host

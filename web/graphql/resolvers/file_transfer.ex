@@ -46,6 +46,10 @@ defmodule EdmBackend.GraphQL.Resolver.FileTransfer do
   end
 
   def update(file_transfer, new_file_transfer, viewer) do
-    # TODO implement
+    if viewer |> can?(update(file_transfer)) do
+      FileTransfer.update(file_transfer, new_file_transfer)
+    else
+      {:error, "Unauthorised to update file transfer"}
+    end
   end
 end

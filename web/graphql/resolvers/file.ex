@@ -3,6 +3,7 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   alias Absinthe.Relay
   alias EdmBackend.Repo
   alias EdmBackend.File
+  alias EdmBackend.Resolver.Source
 
   def list(args, source, viewer) do
     if viewer |> can?(view(source)) do
@@ -59,7 +60,19 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     end
   end
 
-  def create_or_update(source, file, viewer) do
+  def create_or_update(client, file, source_info, viewer) do
+    case EdmBackend.GraphQL.Resolver.Source.get_or_create(client, source_info, viewer) do
+      {:ok, source} ->
+        case create_or_update(source, file, viewer) do
+          {:ok, file} ->
+            {:ok, %{file: file}}
+          {:error, error} -> {:error, error}
+        end
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  defp create_or_update(source, file, viewer) do
     if viewer |> can?(create(source)) and viewer |> can?(update(source)) do
       File.create_or_update(source, file)
     else
@@ -75,8 +88,21 @@ defmodule EdmBackend.GraphQL.Resolver.File do
     end
   end
 
-  def delete(source, file, viewer) do
-    # TODO implement this function
+  def get_source(file, viewer) do
+    source = file |> Repo.preload(:source) |> Map.get(:source)
+    if viewer |> can?(view(source)) do
+      {:ok, source}
+    else
+      {:error, "Unauthorised to view source for file"}
+    end
+  end
+
+  def delete(file, viewer) do
+    if viewer |> can?(delete(file)) do
+      file |> Repo.delete
+    else
+      {:error, "Unauthorised to delete file"}
+    end
   end
 
 end

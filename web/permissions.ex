@@ -11,10 +11,10 @@ defimpl Canada.Can, for: EdmBackend.Client do
     }
 
     @doc """
-    All clients can view themselves
+    All clients can view and update themselves
     """
-    def can?(%Client{id: id}, :view, %Client{id: id}) do
-      # Any client can view itself
+    def can?(%Client{id: id}, action, %Client{id: id}) when action in [:view, :update] do
+      # Any client can view and update itself
       true
     end
 
