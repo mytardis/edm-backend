@@ -12,6 +12,23 @@ defmodule EdmBackend.ClientModelTest do
     assert client.valid?
   end
 
+  test "client get_or_create" do
+    # Create a client
+    assert {:ok, %Client{id: id}} = Client.get_or_create(:provider, %{id: "123", name: "John"})
+
+    # Get it again and it should be the same result
+    {:ok, %Client{id: id1}} = Client.get_or_create(:provider, %{id: "123", name: "John"})
+    assert id == id1
+
+    # Change the name, keep the id, and it should be the same result
+    {:ok, %Client{id: id1}} = Client.get_or_create(:provider, %{id: "123", name: "John Doe"})
+    assert id == id1
+
+    # Change the id, and it should be a new client
+    {:ok, %Client{id: id1}} = Client.get_or_create(:provider, %{id: "1234", name: "John"})
+    refute id == id1
+  end
+
   test "client group membership" do
     {:ok, client} = %Client{} |> Client.changeset(%{name: "test"}) |> Repo.insert
     assert [%{name: "test"}] = Group.get_groups_for(client)
