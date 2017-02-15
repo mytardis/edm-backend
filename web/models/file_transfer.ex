@@ -39,6 +39,7 @@ defmodule EdmBackend.FileTransfer do
   Updates the file transfer with the information provided in the file_transfer_info map
   """
   def update(file_transfer = %FileTransfer{}, file_transfer_info) do
+    file_transfer = file_transfer |> Repo.preload(:file) |> Repo.preload(:destination)
     file_transfer |> changeset(file_transfer_info) |> Repo.update
   end
 

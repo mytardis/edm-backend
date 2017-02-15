@@ -114,12 +114,6 @@ defmodule EdmBackend.GraphQL.Types do
         Resolver.File.list(pagination_args, source, viewer)
       end
     end
-    field :file, type: :file do
-      arg :filepath, :string
-      resolve fn %{filepath: filepath}, get_viewer_and_source(viewer, source) ->
-        Resolver.File.find(source, filepath, viewer)
-      end
-    end
     field :destinations, list_of(:destination) do
       resolve fn _, get_viewer_and_source(viewer, source) ->
         Resolver.Destination.list_destinations(source, viewer)

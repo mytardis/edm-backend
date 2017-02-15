@@ -108,14 +108,14 @@ defmodule EdmBackend.GraphQL.Schema do
 
     payload field :update_file_transfer do
       input do
-        field :file_transfer_id, non_null(:id)
+        field :id, non_null(:id)
         field :file_transfer, non_null(:file_transfer_input_object)
       end
       output do
         field :file_transfer, type: :file_transfer
       end
       resolve fn
-        %{file_transfer_id: file_transfer_id, file_transfer: new_file_transfer}, get_viewer(viewer) ->
+        %{id: file_transfer_id, file_transfer: new_file_transfer}, get_viewer(viewer) ->
           case Resolver.FileTransfer.from_global_id(file_transfer_id) do
             {:ok, file_transfer} ->
               case Resolver.FileTransfer.update(file_transfer, new_file_transfer, viewer) do
