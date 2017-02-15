@@ -162,6 +162,12 @@ defmodule EdmBackend.FileTest do
     refute file4.valid?
   end
 
+  defp get_file_transfer_query(%File{id: file_id}) do
+    from ft in FileTransfer,
+      where: ft.file_id == ^file_id,
+      preload: :destination
+  end
+
   test "create_or_update\\2 creates a file that doesn't exist", context do
     filename = "/a/random/file.txt"
 
@@ -186,6 +192,7 @@ defmodule EdmBackend.FileTest do
       size: 100,
       mtime: DateTime.utc_now()
     })
+    file_transfers_new = Repo.all(get_file_transfer_query(new_file))
 
     {:ok, existing_file} = File.create_or_update(context[:source1], %{
       filepath: filename,
@@ -194,9 +201,13 @@ defmodule EdmBackend.FileTest do
     })
 
     assert new_file.id == existing_file.id
+
+    file_transfers_existing = Repo.all(get_file_transfer_query(existing_file))
+    assert length(file_transfers_new) == length(file_transfers_existing)
+
   end
 
-  test "create_file_transfers\\3 creates a set of FileTransfer records", context do
+  test "add_file_transfers\\2 creates a set of FileTransfer records", context do
     {:ok, file} = %File{source: context[:source1]} |> File.changeset(%{
       filepath: "/somewhere/file1",
       size: 100,
@@ -207,11 +218,7 @@ defmodule EdmBackend.FileTest do
 
     File.add_file_transfers(source.destinations, file)
 
-    query = from ft in FileTransfer,
-      where: ft.file_id == ^file.id,
-      preload: :destination
-
-    file_transfers = Repo.all(query)
+    file_transfers = Repo.all(get_file_transfer_query(file))
     destination_bases = for ft <- file_transfers, do: ft.destination.base
 
     assert length(file_transfers) == 3

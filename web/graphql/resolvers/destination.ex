@@ -1,6 +1,7 @@
 defmodule EdmBackend.GraphQL.Resolver.Destination do
   import Canada, only: [can?: 2]
   alias EdmBackend.Destination
+  alias EdmBackend.FileTransfer
   alias EdmBackend.Repo
 
   def list_destinations(source, viewer) do
@@ -27,6 +28,15 @@ defmodule EdmBackend.GraphQL.Resolver.Destination do
           {:error, "Unauthorised to view destination"}
         end
       {:error, error} -> {:error, error}
+    end
+  end
+
+  def find(%{file_transfer: file_transfer = %FileTransfer{}}, viewer) do
+    destination = file_transfer |> Repo.preload(:destination) |> Map.get(:destination)
+    if viewer |> can?(view(destination)) do
+      {:ok, destination}
+    else
+      {:error, "Unauthorised to view destination"}
     end
   end
 

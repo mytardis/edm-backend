@@ -64,6 +64,9 @@ defmodule EdmBackend.File do
   end
 
   def add_file_transfers([dest|tail], file, status) do
+    # This will fail if the transfer already exists due to db constraints,
+    # but silently ignored. This ensures that duplicate transfers will not be
+    # created.
     %FileTransfer{file: file, destination: dest}
       |> FileTransfer.changeset(%{status: status})
       |> Repo.insert
@@ -118,11 +121,7 @@ defmodule EdmBackend.File do
     case get_file_query(source, file_info) |> Repo.one do
       nil ->
         {:error, "File does not exist"}
-      file ->
-        {:ok, file} = file |> File.changeset(file_info)
-                           |> Repo.update
-        update_file_transfers(source.destinations, file)
-        {:ok, file}
+      file -> File.update(file, file_info)
     end
   end
 
@@ -142,21 +141,20 @@ defmodule EdmBackend.File do
   Creates or updates a file in a source. See update/2
   """
   def create_or_update(source, file_info) do
+    file = case File.update(source, file_info) do
+      {:error, _error} ->
+        # create new file and prompt upload
+        new_file = %File{source: source}
+          |> File.changeset(file_info)
+          |> Repo.insert!
+        new_file
+      {:ok, existing_file} ->
+        existing_file
+    end
 
     source = source |> Repo.preload(:destinations)
+    update_file_transfers(source.destinations, file)
 
-    # try to find file
-    case File.update(source, file_info) do
-      {:error, _} ->
-        # create new file and prompt upload
-        {:ok, new_file} = %File{source: source}
-          |> File.changeset(file_info)
-          |> Repo.insert
-        new_file = new_file |> Repo.preload(:file_transfers)
-        add_file_transfers(source.destinations, new_file)
-        {:ok, new_file}
-      {:ok, file} ->
-        {:ok, file}
-    end
+    {:ok, file}
   end
 end

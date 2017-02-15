@@ -3,6 +3,7 @@ defmodule EdmBackend.GraphQL.Resolver.Host do
   alias EdmBackend.Repo
   alias EdmBackend.Host
   alias EdmBackend.Destination
+  require Logger
 
   def list(client, viewer) do
     all_hosts = for host <- client |> Host.all_hosts do
@@ -50,7 +51,7 @@ defmodule EdmBackend.GraphQL.Resolver.Host do
           v ->
             find(%{id: id}, v)
         end
-      {:ok, %{type: _, id: id}} ->
+      {:ok, %{type: _, id: _id}} ->
         {:error, "Invalid ID"}
       {:error, error} -> {:error, error}
     end

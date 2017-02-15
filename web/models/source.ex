@@ -64,4 +64,11 @@ defmodule EdmBackend.Source do
         %Source{owner: client} |> Source.changeset(source_info) |> Repo.insert
     end
   end
+
+  @doc """
+  Updates the source with the information provided in the source_info map
+  """
+  def update(source = %Source{}, source_info) do
+    source |> changeset(source_info) |> Repo.update
+  end
 end

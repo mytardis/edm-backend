@@ -73,7 +73,7 @@ defmodule EdmBackend.GraphQL.Resolver.Source do
           v ->
             find(%{id: id}, v)
         end
-      {:ok, %{type: _, id: id}} ->
+      {:ok, %{type: _, id: _id}} ->
         {:error, "Invalid ID"}
       {:error, error} -> {:error, error}
     end

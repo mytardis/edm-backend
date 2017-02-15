@@ -25,7 +25,7 @@ defmodule EdmBackend.ClientModelTest do
     assert id == id1
 
     # Change the id, and it should be a new client
-    {:ok, %Client{id: id1} = client} = Client.get_or_create(:provider, %{id: "1234", name: "John"})
+    {:ok, %Client{id: id1}} = Client.get_or_create(:provider, %{id: "1234", name: "John"})
     refute id == id1
   end
 

@@ -64,19 +64,17 @@ defmodule EdmBackend.GraphQL.Types do
         Resolver.Host.find(%{destination: destination}, viewer)
       end
     end
-    field :host_id, type: :string do
-      resolve fn _, get_viewer_and_source(viewer, destination) ->
-        {:ok, %{id: id}} = Resolver.Host.find(%{destination: destination}, viewer)
-        {:ok, id}
-      end
-    end
   end
 
   connection node_type: :file_transfer
   node object :file_transfer do
     field :status, :string
     field :bytes_transferred, :integer
-    field :destination, type: :destination
+    field :destination, type: :destination do
+      resolve fn _, get_viewer_and_source(viewer, file_transfer) ->
+        Resolver.Destination.find(%{file_transfer: file_transfer}, viewer)
+      end
+    end
   end
 
   connection node_type: :file

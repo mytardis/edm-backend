@@ -1,11 +1,13 @@
 defmodule EdmBackend.GraphQL.Resolver.FileTransfer do
   import Canada, only: [can?: 2]
+  alias Absinthe.Relay
   alias EdmBackend.FileTransfer
   alias EdmBackend.Repo
+  require Logger
 
-  def list(_args, file, viewer) do
+  def list(args, file, viewer) do
     if viewer |> can?(view(file)) do
-      {:ok, file |> FileTransfer.get_transfers_for_file}
+      {:ok, file |> FileTransfer.get_transfers_for_file |> Relay.Connection.from_list(args)}
     else
       {:error, "Unauthorised to view transfers for file"}
     end
@@ -39,7 +41,7 @@ defmodule EdmBackend.GraphQL.Resolver.FileTransfer do
           v ->
             find(%{id: id}, v)
         end
-      {:ok, %{type: _, id: id}} ->
+      {:ok, %{type: _, id: _id}} ->
         {:error, "Invalid ID"}
       {:error, error} -> {:error, error}
     end
