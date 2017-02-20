@@ -9,6 +9,7 @@ defmodule EdmBackend.FileMutationTest do
   alias EdmBackend.Group
   alias EdmBackend.Host
   alias EdmBackend.Destination
+  alias EdmBackend.FileTransfer
 
   setup do
     {:ok, owner} = %Client{} |> Client.changeset(%{
@@ -192,6 +193,29 @@ defmodule EdmBackend.FileMutationTest do
     """
   end
 
+  defp update_file_transfer_query(id, new_data) when is_map(new_data) do
+    file_transfer_data_json = Poison.encode!(new_data)
+    """
+{"query": "mutation updateFileTransfer($input: FileTransferInputObject!) {
+  updateFileTransfer(input: $input) {
+            clientMutationId
+            fileTransfer {
+              status
+              bytesTransferred
+            }
+        }
+    }",
+"variables": {
+  "input": {
+    "clientMutationId": "123",
+    "id": "#{id}",
+    "fileTransfer": #{file_transfer_data_json}
+  }
+}
+}
+    """
+  end
+
   defp get_source_id(source) do
     Absinthe.Relay.Node.to_global_id(:source, source.id, EdmBackend.GraphQL.Schema)
   end
@@ -206,6 +230,10 @@ defmodule EdmBackend.FileMutationTest do
 
   defp get_host_id(host) do
     Absinthe.Relay.Node.to_global_id(:host, host.id, EdmBackend.GraphQL.Schema)
+  end
+
+  defp get_file_transfer_id(file_transfer) do
+    Absinthe.Relay.Node.to_global_id(:file_transfer, file_transfer.id, EdmBackend.GraphQL.Schema)
   end
 
   test "creating a file with existing source by source info", context do
@@ -303,6 +331,9 @@ defmodule EdmBackend.FileMutationTest do
 
     query = new_file_info |> update_file_query(get_file_id(context[:existing_file]))
 
+    assert_errors(query, [%{locations: [%{column: 0, line: 2}],
+      message: "In field \"updateFile\": Not logged in"}])
+
     # Confirm that the updated file contains the updated parameters
     assert_data(query, %{"updateFile" => %{
       "clientMutationId" => "123",
@@ -324,6 +355,10 @@ defmodule EdmBackend.FileMutationTest do
         "size" => 12
     }
     query = file_id |> delete_file_query()
+
+    assert_errors(query, [%{locations: [%{column: 0, line: 2}],
+      message: "In field \"deleteFile\": Not logged in"}])
+
     assert_data(query, %{"deleteFile" => %{
       "clientMutationId" => "123",
       "file" => file_info
@@ -356,7 +391,7 @@ defmodule EdmBackend.FileMutationTest do
     }) |> Repo.insert
 
     File.update(file, %{}) # Should create file transfer records
-    
+
     host_id = get_host_id(host)
     query = get_file_transfers_for_file_query(file_id)
     assert_data(query, %{
@@ -378,6 +413,54 @@ defmodule EdmBackend.FileMutationTest do
               }
             }
           ]
+        }
+      }
+    }, client)
+  end
+
+  test "update a file transfer", context do
+    client = context[:client]
+    file = context[:existing_file]
+    {:ok, group} = Group.get_by_name(client.name)
+
+    Role.create("admin", :admin, group, group)
+
+    # Create a host
+    {:ok, host} = %Host{group: group} |> Host.changeset(%{
+      name: "some host",
+      transfer_method: "sftp",
+      settings: %{
+        host: "some.host.edu.au",
+        private_key: "AAAAAAAA"
+      }
+    }) |> Repo.insert
+    # Create a destination
+    {:ok, _destination} = %Destination{
+      host: host,
+      source: context[:source]
+    } |> Destination.changeset(%{
+      base: "/some/base"
+    }) |> Repo.insert
+
+    File.update(file, %{}) # Should create file transfer records
+
+    # Get the first FileTransfer records
+    [file_transfer|_] = FileTransfer.get_transfers_for_file(file)
+    file_transfer_id = get_file_transfer_id(file_transfer)
+    query = update_file_transfer_query(file_transfer_id, %{
+      status: "abc",
+      bytes_transferred: 50
+    })
+
+    assert_errors(query, [%{locations: [%{column: 0, line: 2}],
+      message: "In field \"updateFileTransfer\": Not logged in"}])
+
+    assert_data(query, %{
+      "updateFileTransfer" => %{
+        "clientMutationId" => "123",
+        "fileTransfer" => %{
+          "bytesTransferred" => 50,
+          "status" => "abc"
         }
       }
     }, client)
