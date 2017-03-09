@@ -6,16 +6,22 @@ defmodule EdmBackend.Group do
   require Logger
   use EdmBackend.Web, :model
   alias EdmBackend.Repo
+  alias EdmBackend.Role
   alias EdmBackend.Destination
   alias EdmBackend.Group
   alias EdmBackend.GroupMembership
+  alias EdmBackend.Host
+  alias EdmBackend.Client
+  alias EdmBackend.Source
+  alias EdmBackend.File
+  alias EdmBackend.FileTransfer
 
   schema "groups" do
     field :name, :string
     field :description, :string
     has_many :group_memberships, GroupMembership, on_delete: :delete_all
+    has_many :roles, Role, on_delete: :delete_all
     has_many :clients, through: [:group_memberships, :client]
-    has_many :destinations, Destination
     timestamps()
   end
 
@@ -29,11 +35,63 @@ defmodule EdmBackend.Group do
   end
 
   @doc """
-  Returns a list of clients who are members of this group
+  Resolves a group by name
   """
-  def members(group) do
-    %{clients: members} = group |> Repo.preload(:clients)
-    members
+  def get_by_name(name) do
+    q = from group in Group,
+      where: group.name == ^name
+    case Repo.one(q) do
+      nil ->
+        {:error, "Group not found"}
+      group ->
+        {:ok, group}
+    end
+  end
+
+  def get_groups_for(%Group{} = group) do
+    [group]
+  end
+
+  @doc """
+  Gets the groups to which the given host belongs
+  """
+  def get_groups_for(%Host{} = host) do
+    [host |> Repo.preload(:group) |> Map.get(:group)]
+  end
+
+  @doc """
+  Gets the groups to which the given client belongs
+  """
+  def get_groups_for(%Client{} = client) do
+    Client.all_groups(client)
+  end
+
+  @doc """
+  Gets the groups to which the given source belongs
+  """
+  def get_groups_for(%Source{} = source) do
+    get_groups_for(source |> Repo.preload(:owner) |> Map.get(:owner))
+  end
+
+  @doc """
+  Gets the groups to which the given destination belongs
+  """
+  def get_groups_for(%Destination{} = destination) do
+    get_groups_for(destination |> Repo.preload(:host) |> Map.get(:host))
+  end
+
+  @doc """
+  Gets the groups to which the given file belongs
+  """
+  def get_groups_for(%File{} = file) do
+    get_groups_for(file |> Repo.preload(:source) |> Map.get(:source))
+  end
+
+  @doc """
+  Gets the groups to which the given file transfer belongs
+  """
+  def get_groups_for(%FileTransfer{} = file_transfer) do
+    get_groups_for(file_transfer |> Repo.preload(:file) |> Map.get(:file))
   end
 
 end

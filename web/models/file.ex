@@ -54,6 +54,9 @@ defmodule EdmBackend.File do
     |> validate_required(@required)
   end
 
+  @doc """
+  Creates file transfer records for each destination for a given file
+  """
   def add_file_transfers(destinations, file, status \\ "new")
 
   def add_file_transfers([], _file, _status) do
@@ -61,6 +64,9 @@ defmodule EdmBackend.File do
   end
 
   def add_file_transfers([dest|tail], file, status) do
+    # This will fail if the transfer already exists due to db constraints,
+    # but silently ignored. This ensures that duplicate transfers will not be
+    # created.
     %FileTransfer{file: file, destination: dest}
       |> FileTransfer.changeset(%{status: status})
       |> Repo.insert
@@ -68,10 +74,12 @@ defmodule EdmBackend.File do
   end
 
   @doc """
-  first add missing file transfers then remove superfluous ones
-  leave completed file transfers as record
+  Updates file transfer records by first adding missing file transfers, then
+  removing superfluous ones, leaving completed file transfers as a historical
+  record
   """
   def update_file_transfers(destinations, file) do
+    file = file |> Repo.preload(:file_transfers)
     add_file_transfers(destinations, file)
     Enum.map(file.file_transfers, fn(ft) ->
       if ! (ft.status == "complete" or
@@ -81,45 +89,72 @@ defmodule EdmBackend.File do
     end)
   end
 
-  defp get_file_query(source, file_info) do
+  @doc """
+  Returns a query to retrieve all files for a source
+  """
+  def get_file_query(source) do
     from f in File,
       where: f.source_id == ^source.id,
-      where: f.filepath == ^file_info.filepath,
       preload: :file_transfers,
       preload: :source
   end
 
-  def update(source, file_info) do
+  @doc """
+  Returns a query to retrieve a file with the given path for a given source
+  """
+  def get_file_query(source, %{filepath: filepath}) do
+    get_file_query(source) |> where([f], f.filepath == ^filepath)
+  end
+
+  @doc """
+  Returns a list of all files for the given source
+  """
+  def list(source) do
+    source |> get_file_query |> Repo.all
+  end
+
+  @doc """
+  Updates an existing file from a given source. Returns an error if the file
+  does not exist.
+  """
+  def update(source = %Source{}, file_info) do
     case get_file_query(source, file_info) |> Repo.one do
       nil ->
         {:error, "File does not exist"}
-      file ->
-        file |> File.changeset(file_info)
-             |> Repo.update
+      file -> File.update(file, file_info)
     end
   end
 
+  @doc """
+  Updates a file with the map given in file_info
+  """
+  def update(file = %File{}, file_info) do
+    file = file |> Repo.preload(:source)
+    destinations = file.source |> Repo.preload(:destinations) |> Map.get(:destinations)
+    {:ok, file} = file |> changeset(file_info)
+                       |> Repo.update
+    update_file_transfers(destinations, file)
+    {:ok, file}
+  end
+
+  @doc """
+  Creates or updates a file in a source. See update/2
+  """
   def create_or_update(source, file_info) do
+    file = case File.update(source, file_info) do
+      {:error, _error} ->
+        # create new file and prompt upload
+        new_file = %File{source: source}
+          |> File.changeset(file_info)
+          |> Repo.insert!
+        new_file
+      {:ok, existing_file} ->
+        existing_file
+    end
 
     source = source |> Repo.preload(:destinations)
+    update_file_transfers(source.destinations, file)
 
-    # try to find file
-    case get_file_query(source, file_info) |> Repo.one do
-      nil ->
-        # create new file and prompt upload
-        {:ok, new_file} = %File{source: source}
-          |> File.changeset(file_info)
-          |> Repo.insert
-        new_file = new_file |> Repo.preload(:file_transfers)
-        add_file_transfers(source.destinations, new_file)
-        {:ok, new_file}
-      file ->
-        # file exists, update with new information
-        {:ok, file} = file
-          |> File.changeset(file_info)
-          |> Repo.update
-        update_file_transfers(source.destinations, file)
-        {:ok, file}
-    end
+    {:ok, file}
   end
 end

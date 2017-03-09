@@ -23,11 +23,24 @@ defmodule EdmBackend.FileTransfer do
           |> cast_assoc(:file, required: true)
           |> cast_assoc(:destination, required: true)
           |> validate_required(@required)
+          |> unique_constraint(:destination, name: :file_transfers_file_id_destination_id_index)
   end
 
+  @doc """
+  Returns a list of all transfers for the given file
+  """
   def get_transfers_for_file(file) do
     query = from ft in FileTransfer,
       where: ft.file_id == ^file.id
     Repo.all(query)
   end
+
+  @doc """
+  Updates the file transfer with the information provided in the file_transfer_info map
+  """
+  def update(file_transfer = %FileTransfer{}, file_transfer_info) do
+    file_transfer = file_transfer |> Repo.preload(:file) |> Repo.preload(:destination)
+    file_transfer |> changeset(file_transfer_info) |> Repo.update
+  end
+
 end

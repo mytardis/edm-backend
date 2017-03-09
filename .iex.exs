@@ -1,0 +1,11 @@
+alias EdmBackend.Repo
+alias EdmBackend.Client
+alias EdmBackend.Credential
+alias EdmBackend.Destination
+alias EdmBackend.FileTransfer
+alias EdmBackend.File
+alias EdmBackend.GroupMembership
+alias EdmBackend.Group
+alias EdmBackend.Host
+alias EdmBackend.Role
+alias EdmBackend.Source

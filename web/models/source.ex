@@ -29,12 +29,18 @@ defmodule EdmBackend.Source do
     |> validate_required(@required)
   end
 
+  @doc """
+  Returns a list of all sources that belong to the given client
+  """
   def all_sources(client) do
     query = from s in Source,
       where: s.owner_id == ^client.id
     Repo.all(query)
   end
 
+  @doc """
+  Returns the source with the given name belonging to the given client
+  """
   def find(client, name) do
     query = from s in Source,
       where: s.owner_id == ^client.id and s.name == ^name,
@@ -46,6 +52,10 @@ defmodule EdmBackend.Source do
     end
   end
 
+  @doc """
+  Gets or creates the source as specified by the source_info map and assigns it
+  to the given client
+  """
   def get_or_create(client, source_info) do
     case Source.find(client, source_info.name) do
       {:ok, source} ->
@@ -53,5 +63,12 @@ defmodule EdmBackend.Source do
       {:error, _} ->
         %Source{owner: client} |> Source.changeset(source_info) |> Repo.insert
     end
+  end
+
+  @doc """
+  Updates the source with the information provided in the source_info map
+  """
+  def update(source = %Source{}, source_info) do
+    source |> changeset(source_info) |> Repo.update
   end
 end

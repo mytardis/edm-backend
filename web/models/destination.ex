@@ -27,6 +27,9 @@ defmodule EdmBackend.Destination do
           |> validate_required(@required)
   end
 
+  @doc """
+  Returns a list of all destinations for a given source
+  """
   def all_destinations(source) do
     query = from d in Destination,
       where: d.source_id == ^source.id
