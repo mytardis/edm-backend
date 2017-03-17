@@ -14,6 +14,6 @@ defmodule EdmBackend.Repo.Migrations.AddFileTransfersTable do
       timestamps()
     end
 
-    create unique_index(:file_transfers, [:file_id, :destination_id])
+#    create unique_index(:file_transfers, [:file_id, :destination_id, :status])
   end
 end

@@ -102,8 +102,8 @@ defmodule EdmBackend.File do
   @doc """
   Returns a query to retrieve a file with the given path for a given source
   """
-  def get_file_query(source, %{filepath: filepath}) do
-    get_file_query(source) |> where([f], f.filepath == ^filepath)
+  def get_file_by_path(source, %{filepath: filepath}) do
+    get_file_query(source) |> where([f], f.filepath == ^filepath) |> Repo.one
   end
 
   @doc """
@@ -138,19 +138,65 @@ defmodule EdmBackend.File do
   end
 
   @doc """
-  Creates or updates a file in a source. See update/2
+  create new file
+  """
+  def create(source, file_info) do
+    %File{source: source}
+    |> File.changeset(file_info)
+    |> Repo.insert
+  end
+
+  @doc """
+  test for differences between file from db and file_info
+  return changes
+  """
+  def file_changes(file, file_info) do
+    keys = Map.keys(file_info)
+    db_file_info = Map.split(file, keys)
+    Enum.reduce(keys, %{}, fn(key, changes) ->
+      if db_file_info[key] != file_info[key] do
+        Map.put(changes, key, {db_file_info[key], file_info[key]})
+      end
+    end)
+  end
+
+  @doc """
+  Cancel all active file transfers
+  """
+  def cancel_transfers(file) do
+    file = file |> Repo.preload(:file_transfers)
+    Enum.map(file.file_transfers, fn(ft) ->
+      if ! (ft.status == "complete") do
+        ft.status = "cancelled"
+        ft |> Repo.update
+      end
+    end)
+  end
+
+  @doc """
+  Creates or updates a file in a source.
+
+  Check if file exists
+   if it does, cancel existing transfers only if file_info changed
+   else create file
+  In all cases create file transfers unless they already exist and are not
+  cancelled
   """
   def create_or_update(source, file_info) do
-    file = case File.update(source, file_info) do
-      {:error, _error} ->
-        # create new file and prompt upload
-        new_file = %File{source: source}
-          |> File.changeset(file_info)
-          |> Repo.insert!
-        new_file
-      {:ok, existing_file} ->
-        existing_file
+    file = case get_file_by_path(source, file_info) do
+             {:error, _error} ->
+               {:ok, file} = create(source, file_info)
+               file
+             {:ok, file} ->
+               case file_changes(file, file_info) do
+                 changes when map_size(changes) > 0 ->
+                   cancel_transfers(file)
+                   update_file(file, file_info)
+               end
+               file
     end
+
+    update_file_transfers(file, source)
 
     source = source |> Repo.preload(:destinations)
     update_file_transfers(source.destinations, file)
