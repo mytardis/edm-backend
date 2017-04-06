@@ -1,4 +1,15 @@
 defmodule EdmBackend.FileTest do
+  @moduledoc """
+  Testing the File model and related functions
+
+  create_or_update_file tests should cover these cases:
+  file exists                      | file is new
+  file_info changed | file stayed the same      | file info is new
+  3 file cases
+  ft exist | ft cancelled | new ft | removed ft | new fts
+  5 file transfer cases
+
+  """
   require Logger
   use EdmBackend.ModelCase
   import Ecto.Query, only: [from: 2]
@@ -165,7 +176,8 @@ defmodule EdmBackend.FileTest do
   defp get_file_transfer_query(%File{id: file_id}) do
     from ft in FileTransfer,
       where: ft.file_id == ^file_id,
-      preload: :destination
+      preload: :destination,
+      preload: :file
   end
 
   test "create_or_update\\2 creates a file that doesn't exist", context do
@@ -202,7 +214,10 @@ defmodule EdmBackend.FileTest do
 
     assert new_file.id == existing_file.id
 
-    file_transfers_existing = Repo.all(get_file_transfer_query(existing_file))
+    query = from ft in FileTransfer,
+      where: ft.file_id == ^existing_file.id,
+      where: ft.status != "cancelled"
+    file_transfers_existing = query |> Repo.all
     assert length(file_transfers_new) == length(file_transfers_existing)
 
   end
@@ -225,6 +240,26 @@ defmodule EdmBackend.FileTest do
     assert "/destination/1/" in destination_bases
     assert "/destination/2/" in destination_bases
     assert "/destination/3/" in destination_bases
+  end
+
+
+  test "cancel_transfers\\1 cancels all file transfers for a file", context do
+    {:ok, file} = %File{source: context[:source1]} |> File.changeset(%{
+      filepath: "/somewhere/file1",
+      size: 100,
+      mtime: DateTime.utc_now()
+    }) |> Repo.insert
+    source = context[:source1] |> Repo.preload(:destinations)
+    File.add_file_transfers(source.destinations, file)
+    file_transfers = Repo.all(get_file_transfer_query(file))
+    assert length(file_transfers) == 3
+    File.cancel_transfers(file)
+    file_transfers = Repo.all(get_file_transfer_query(file))
+    Enum.map(
+      file_transfers,
+      fn ft ->
+        assert ft.status == "cancelled"
+      end)
   end
 
 end

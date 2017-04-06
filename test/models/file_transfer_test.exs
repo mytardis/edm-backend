@@ -54,7 +54,8 @@ defmodule EdmBackend.FileTransferTest do
     [
       destination1: destination1,
       destination2: destination2,
-      file1: file
+      file1: file,
+      source1: source,
     ]
   end
 
@@ -123,6 +124,28 @@ defmodule EdmBackend.FileTransferTest do
     assert length(file_transfers) == 2
     assert "/destination/1/" in destination_bases
     assert "/destination/2/" in destination_bases
+  end
+
+  test "cancel_transfer\\1 cancels one incomplete file transfers", context do
+
+    {:ok, new_file} = File.create_or_update(
+      context[:source1],
+      %{
+          filepath: "/some/file",
+          size: 12,
+          mtime: DateTime.utc_now(),
+      })
+
+    [ft | _] = Repo.all(from ft in FileTransfer,
+        where: ft.file_id == ^new_file.id,
+        preload: :destination,
+        preload: :file)
+
+    EdmBackend.FileTransfer.cancel_transfer(ft)
+    query = from ft in FileTransfer,
+      where: ft.id == ^ft.id
+    ft = query |> Repo.one
+    assert ft.status == "cancelled"
   end
 
 end

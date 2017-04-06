@@ -1,5 +1,11 @@
 use Mix.Config
 
+# Configure flasked for environment-based config
+config :flasked,
+  otp_app: :edm_backend,
+  map_file: "priv/flasked/flasked_prod.exs"
+
+
 # For production, we configure the host to read the PORT
 # from the system environment. Therefore, you will need
 # to set PORT=80 before running your server.
@@ -18,6 +24,10 @@ config :edm_backend, EdmBackend.Endpoint,
 
 # Do not print debug messages in production
 config :logger, level: :info
+
+config :edm_backend, myvar2: "hello from prod config"
+config :edm_backend, myvar3: System.get_env("MYVAR3") || "empty"
+
 
 # ## SSL Support
 #
@@ -61,5 +71,5 @@ config :logger, level: :info
 #     config :edm_backend, EdmBackend.Endpoint, root: "."
 
 # Configure your database
-config :edm_backend, EdmBackend.Repo
+config :edm_backend, EdmBackend.Repo,
   pool_size: 20

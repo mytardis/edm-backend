@@ -40,7 +40,12 @@ defmodule EdmBackend.Mixfile do
        :ueberauth_google,
        :ueberauth_edm,
        :guardian,
-       :guardian_db]]
+       :guardian_db,
+       :calecto,
+       :cors_plug,
+       :canada,
+       :eye_drops,
+       ]]
   end
 
   # Specifies which paths to compile per environment.
@@ -85,7 +90,10 @@ defmodule EdmBackend.Mixfile do
      {:eye_drops, "~> 1.2"},
 
      # Provides environment-based configuration
-     {:flasked, "~> 0.4"}]
+     {:flasked, "~> 0.4"},
+
+     {:exrm, "~> 1.0"},
+     ]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.

@@ -1,5 +1,11 @@
 use Mix.Config
 
+# Configure flasked for environment-based config
+config :flasked,
+  otp_app: :edm_backend,
+  map_file: "priv/flasked/flasked_dev.exs"
+
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

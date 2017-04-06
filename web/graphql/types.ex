@@ -64,6 +64,13 @@ defmodule EdmBackend.GraphQL.Types do
         Resolver.Host.find(%{destination: destination}, viewer)
       end
     end
+    connection field :file_transfers, node_type: :file_transfer do
+      resolve fn pagination_args, get_viewer_and_source(viewer, destination) ->
+        require IEx
+        IEx.pry()
+        Resolver.FileTransfer.list(pagination_args, destination, viewer)
+      end
+    end
   end
 
   connection node_type: :file_transfer

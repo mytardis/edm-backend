@@ -37,10 +37,21 @@ defmodule EdmBackend.FileTransfer do
 
   @doc """
   Updates the file transfer with the information provided in the file_transfer_info map
+  Disallow editing of cancelled transfers
   """
-  def update(file_transfer = %FileTransfer{}, file_transfer_info) do
-    file_transfer = file_transfer |> Repo.preload(:file) |> Repo.preload(:destination)
-    file_transfer |> changeset(file_transfer_info) |> Repo.update
+  def update(%FileTransfer{} = file_transfer, file_transfer_info) do
+    if file_transfer_info.status != "cancelled" do
+      file_transfer = file_transfer |> Repo.preload(:file) |> Repo.preload(:destination)
+      file_transfer |> changeset(file_transfer_info) |> Repo.update
+    end
+  end
+
+  def cancel_transfer(%FileTransfer{} = ft) do
+    ft = ft |> Repo.preload(:file) |> Repo.preload(:destination)
+    if ! (ft.status == "complete") do
+      changeset(ft, %{status: "cancelled"})
+      |> Repo.update
+    end
   end
 
 end

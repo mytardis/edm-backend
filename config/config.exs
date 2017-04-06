@@ -6,10 +6,6 @@
 use Mix.Config
 require Logger
 
-# Configure flasked for environment-based config
-config :flasked,
-  otp_app: :edm_backend,
-  map_file: "priv/flasked_env.exs"
 
 # General application configuration
 config :edm_backend,
@@ -46,8 +42,8 @@ config :guardian_db, GuardianDb,
 
 # Global database config
 config :edm_backend, EdmBackend.Repo,
-  adapter: String.to_atom(System.get_env("DATABASE_ADAPTER") || "Elixir.Ecto.Adapters.MySQL"),
-  url: {:system, "DATABASE_URL"}
+  adapter: String.to_atom(System.get_env("DATABASE_ADAPTER") || "Elixir.Ecto.Adapters.MySQL")
+#  url: {:system, "DATABASE_URL"}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

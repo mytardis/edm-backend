@@ -1,4 +1,15 @@
 defmodule EdmBackend.FileMutationTest do
+  @moduledoc """
+  Testing File mutations
+
+  create_or_update_file should cover these cases:
+               file exists                      | file is new
+  file_info changed | file stayed the same      | file info is new
+  3 file cases
+  ft exist | ft cancelled | new ft | removed ft | new fts
+  5 file transfer cases
+
+  """
   require Logger
   use EdmBackend.GraphQLCase
   alias EdmBackend.Repo
@@ -35,7 +46,8 @@ defmodule EdmBackend.FileMutationTest do
     [client: owner, source: source, existing_file: file]
   end
 
-  defp create_or_update_file_query(file_info, source_info) when is_map(source_info) do
+  defp create_or_update_file_query(file_info, source_info)
+      when is_map(source_info) do
     file_info_json = Poison.encode!(file_info)
     source_info_json = Poison.encode!(source_info)
 
@@ -71,7 +83,8 @@ defmodule EdmBackend.FileMutationTest do
     """
   end
 
-  defp create_or_update_file_query(file_info, owner_id, source_info) when is_map(source_info) do
+  defp create_or_update_file_query(file_info, owner_id, source_info)
+      when is_map(source_info) do
     file_info_json = Poison.encode!(file_info)
     source_info_json = Poison.encode!(source_info)
 
@@ -217,11 +230,13 @@ defmodule EdmBackend.FileMutationTest do
   end
 
   defp get_source_id(source) do
-    Absinthe.Relay.Node.to_global_id(:source, source.id, EdmBackend.GraphQL.Schema)
+    Absinthe.Relay.Node.to_global_id(
+      :source, source.id, EdmBackend.GraphQL.Schema)
   end
 
   defp get_client_id(client) do
-    Absinthe.Relay.Node.to_global_id(:client, client.id, EdmBackend.GraphQL.Schema)
+    Absinthe.Relay.Node.to_global_id(
+      :client, client.id, EdmBackend.GraphQL.Schema)
   end
 
   defp get_file_id(file) do
@@ -233,7 +248,8 @@ defmodule EdmBackend.FileMutationTest do
   end
 
   defp get_file_transfer_id(file_transfer) do
-    Absinthe.Relay.Node.to_global_id(:file_transfer, file_transfer.id, EdmBackend.GraphQL.Schema)
+    Absinthe.Relay.Node.to_global_id(
+      :file_transfer, file_transfer.id, EdmBackend.GraphQL.Schema)
   end
 
   test "creating a file with existing source by source info", context do
@@ -329,7 +345,8 @@ defmodule EdmBackend.FileMutationTest do
         "size" => 120
     }
 
-    query = new_file_info |> update_file_query(get_file_id(context[:existing_file]))
+    query = new_file_info
+            |> update_file_query(get_file_id(context[:existing_file]))
 
     assert_errors(query, [%{locations: [%{column: 0, line: 2}],
       message: "In field \"updateFile\": Not logged in"}])
