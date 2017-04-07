@@ -58,14 +58,15 @@ defmodule EdmBackend.Mixfile do
   defp deps do
     [{:phoenix, "~> 1.2.0"},
      {:phoenix_pubsub, "~> 1.0"},
-     {:phoenix_ecto, "~> 3.0"},
-     {:mariaex, "~> 0.7.3"},
+     {:phoenix_ecto, "~> 3.2.2"},
+     {:mariaex, "~> 0.8.2"},
      {:postgrex, ">= 0.11.2"},
      {:phoenix_html, "~> 2.6"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:cowboy, "~> 1.0"},
      {:excoveralls, "~> 0.5", only: :test},
+     {:ecto, "~> 2.1.4"},
 
      # OAuth support
      {:oauth, github: "tim/erlang-oauth"},
@@ -73,7 +74,7 @@ defmodule EdmBackend.Mixfile do
      {:ueberauth_google, "~> 0.5"},
      {:ueberauth_edm, git: "https://github.com/mytardis/ueberauth_edm.git"},
      {:guardian, "~> 0.14.0"},
-     {:guardian_db, "~> 0.7"},
+     {:guardian_db, "~> 0.8"},
 
      # Permissions
      {:canada, "~> 1.0.1"},
@@ -81,7 +82,7 @@ defmodule EdmBackend.Mixfile do
      # GraphQL support
      {:absinthe_plug, "~> 1.2"},
      {:absinthe_relay, "~> 1.2.0"},
-     {:poison, "~> 2.1.0"},
+     {:poison, "~> 2.2.0"},
      {:cors_plug, "~> 1.1"}, # Needed for cross-site access
      {:calendar, "~> 0.16.0"},
      {:calecto, "~> 0.16.0"},

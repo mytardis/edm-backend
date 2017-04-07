@@ -25,10 +25,6 @@ config :edm_backend, EdmBackend.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :edm_backend, myvar2: "hello from prod config"
-config :edm_backend, myvar3: System.get_env("MYVAR3") || "empty"
-
-
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
