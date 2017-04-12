@@ -1,13 +1,23 @@
 defmodule EdmBackend.GraphQL.Resolver.FileTransfer do
   import Canada, only: [can?: 2]
   alias Absinthe.Relay
+  alias EdmBackend.File
   alias EdmBackend.FileTransfer
   alias EdmBackend.Repo
   require Logger
 
-  def list(args, file, viewer) do
+  def list(args, %File{} = file, viewer) do
     if viewer |> can?(view(file)) do
       {:ok, file |> FileTransfer.get_transfers_for_file |> Relay.Connection.from_list(args)}
+    else
+      {:error, "Unauthorised to view transfers for file"}
+    end
+  end
+
+  def list(pagination, status, %EdmBackend.Destination{} = destination, viewer) do
+    if viewer |> can?(view(destination)) do
+      {:ok, destination |> FileTransfer.get_transfers_for_destination(status)
+                        |> Relay.Connection.from_list(pagination)}
     else
       {:error, "Unauthorised to view transfers for file"}
     end

@@ -2,13 +2,6 @@ defmodule EdmBackend.FileMutationTest do
   @moduledoc """
   Testing File mutations
 
-  create_or_update_file should cover these cases:
-               file exists                      | file is new
-  file_info changed | file stayed the same      | file info is new
-  3 file cases
-  ft exist | ft cancelled | new ft | removed ft | new fts
-  5 file transfer cases
-
   """
   require Logger
   use EdmBackend.GraphQLCase
@@ -33,7 +26,7 @@ defmodule EdmBackend.FileMutationTest do
       fstype: "POSIX"
     }) |> Repo.insert
 
-    {:ok, file} = %File{source: source} |> File.changeset(%{
+    existing_file_info = %{
       filepath: "testfile3.txt",
       atime: "2013-06-05T06:40:25.000000Z",
       birthtime: "2013-06-05T06:40:25.000000Z",
@@ -41,9 +34,17 @@ defmodule EdmBackend.FileMutationTest do
       mode: 100644,
       mtime: "2013-06-05T06:40:25.000000Z",
       size: 12
-    }) |> Repo.insert
+    }
 
-    [client: owner, source: source, existing_file: file]
+    {:ok, file} = %File{source: source} |> File.changeset(existing_file_info)
+                  |> Repo.insert
+
+    [client: owner, source: source, existing_file: file,
+     existing_file_info: existing_file_info]
+  end
+
+  defp map_atom_to_string_keys(atom_key_map) do
+    for {key, val} <- atom_key_map, into: %{}, do: {Atom.to_string(key), val}
   end
 
   defp create_or_update_file_query(file_info, source_info)
@@ -327,22 +328,12 @@ defmodule EdmBackend.FileMutationTest do
 
   test "update a file", context do
     client = context[:client]
-
-    current_file_info = %{
-        "filepath" => "testfile4.txt",
-        "atime" => "2013-06-05T06:40:25.000000Z",
-        "birthtime" => "2013-06-05T06:40:25.000000Z",
-        "ctime" => "2013-06-05T06:40:25.000000Z",
-        "mode" => 100644,
-        "mtime" => "2013-06-05T06:40:25.000000Z",
-        "size" => 12
-    }
+    current_file_info = context[:existing_file_info]
 
     # Update the file...
-    new_file_info = %{
-        "filepath" => "testfile4.txt",
-        "mode" => 100777,
-        "size" => 120
+    new_file_info = %{ current_file_info |
+        mode: 100777,
+        size: 120
     }
 
     query = new_file_info
@@ -354,7 +345,7 @@ defmodule EdmBackend.FileMutationTest do
     # Confirm that the updated file contains the updated parameters
     assert_data(query, %{"updateFile" => %{
       "clientMutationId" => "123",
-      "file" => Map.merge(current_file_info, new_file_info)
+      "file" => map_atom_to_string_keys(Map.merge(current_file_info, new_file_info))
       }}, client)
   end
 

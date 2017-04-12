@@ -117,18 +117,6 @@ defmodule EdmBackend.File do
     source |> get_file_query |> Repo.all
   end
 
-  # @doc """
-  # Updates an existing file from a given source. Returns an error if the file
-  # does not exist.
-  # """
-  # def update(source = %Source{}, file_info) do
-  #   case get_file_query(source, file_info) |> Repo.one do
-  #     nil ->
-  #       {:error, "File does not exist"}
-  #     file -> File.update(file, file_info)
-  #   end
-  # end
-
   @doc """
   updates details of an existing file
   """
@@ -140,24 +128,21 @@ defmodule EdmBackend.File do
   end
 
   @doc """
-  Updates a file with the map given in file_info
-  """
-  def update(%File{} = file, file_info) do
-    {:ok, file} = update_file(file, file_info)
-    destinations = file.source
-    |> Repo.preload(:destinations)
-    |> Map.get(:destinations)
-    update_file_transfers(destinations, file)
-    {:ok, file}
-  end
-
-  @doc """
   create new file
   """
-  def create(source, file_info) do
+  def create_file(source, file_info) do
     %File{source: source}
     |> File.changeset(file_info)
     |> Repo.insert
+  end
+
+  @doc """
+  create new file and file_transfers
+  """
+  def create(source, file_info) do
+    {:ok, file} = create_file(source, file_info)
+    {:ok, file} = update_transfers(file)
+    {:ok, file}
   end
 
   @doc """
@@ -169,12 +154,12 @@ defmodule EdmBackend.File do
     {db_file_info, _} = Map.split(file, keys)
     changes = Enum.reduce(keys, %{}, fn(key, changes) ->
       if Map.get(db_file_info, key) != Map.get(file_info, key) do
-        Map.put(changes, key, {Map.get(db_file_info, key),
-                               Map.get(file_info, key)})
+        changes = Map.put(changes, key, {Map.get(db_file_info, key),
+                          Map.get(file_info, key)})
       end
       changes
     end)
-#    Logger.warn(IO.inspect(changes))
+    changes
   end
 
   @doc """
@@ -198,18 +183,47 @@ defmodule EdmBackend.File do
   def create_or_update(source, file_info) do
     file = case get_file_by_path(source, file_info) do
              %File{} = file ->
-               {:ok, file} = case file_changes(file, file_info) do
-                 changes when map_size(changes) > 0 ->
-                   cancel_transfers(file)
-                   {:ok, file} = update_file(file, file_info)
-                 _ ->
-                   {:ok, file}
-               end
+               {:ok, file} = File.update(file, file_info)
                file
              _ ->
                {:ok, file} = create(source, file_info)
                file
-    end
+           end
+    {:ok, file}
+  end
+
+  # @doc """
+  # Updates an existing file
+  # """
+  # @doc """
+  # Updates an existing file from a given source. Returns an error if the file
+  # does not exist.
+  # """
+  # def update(source = %Source{}, file_info) do
+  #   case get_file_query(source, file_info) |> Repo.one do
+  #     nil ->
+  #       {:error, "File does not exist"}
+  #     file -> File.update(file, file_info)
+  #   end
+  # end
+
+  def update(%File{} = file, file_info) do
+    file = case file_changes(file, file_info) do
+             changes when map_size(changes) > 0 ->
+               cancel_transfers(file)
+               {:ok, file} = update_file(file, file_info)
+               file
+             _ ->
+               file
+           end
+    {:ok, file} = update_transfers(file)
+    {:ok, file}
+  end
+
+  @doc """
+  Updates file transfers for a file
+  """
+  def update_transfers(%File{} = file) do
 
     file = file |> Repo.preload(:file_transfers)
     existing_ft = file.file_transfers
@@ -219,7 +233,8 @@ defmodule EdmBackend.File do
       end
     end)
 
-    source = source |> Repo.preload(:destinations)
+    file = file |> Repo.preload(:source)
+    source = file.source |> Repo.preload(:destinations)
     Enum.map(existing_ft, fn(ft) ->
       if ! ft.destination in source.destinations do
         FileTransfer.cancel_transfer(ft)

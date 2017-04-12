@@ -36,6 +36,21 @@ defmodule EdmBackend.FileTransfer do
   end
 
   @doc """
+  Returns a list of all transfers for the given destination
+  """
+  def get_transfers_for_destination(destination, status) do
+    query = from ft in FileTransfer,
+      where: ft.destination_id == ^destination.id
+    query = case status do
+              status when is_nil(status) ->
+                query
+              status ->
+                query = query |> where([ft], ft.status == ^status)
+            end
+    Repo.all(query)
+  end
+
+  @doc """
   Updates the file transfer with the information provided in the file_transfer_info map
   Disallow editing of cancelled transfers
   """

@@ -65,10 +65,10 @@ defmodule EdmBackend.GraphQL.Types do
       end
     end
     connection field :file_transfers, node_type: :file_transfer do
-      resolve fn pagination_args, get_viewer_and_source(viewer, destination) ->
-        require IEx
-        IEx.pry()
-        Resolver.FileTransfer.list(pagination_args, destination, viewer)
+      arg :status, :string
+      resolve fn args, get_viewer_and_source(viewer, destination) ->
+        {status, pagination_args} = Map.pop(args, :status, nil)
+        Resolver.FileTransfer.list(pagination_args, status, destination, viewer)
       end
     end
   end
@@ -159,6 +159,12 @@ defmodule EdmBackend.GraphQL.Types do
       arg :name, :string
       resolve fn %{name: name}, get_viewer_and_source(viewer, client) ->
         Resolver.Source.find(client, name, viewer)
+      end
+    end
+    field :destination, type: :destination do
+      arg :id, :string
+      resolve fn %{id: id}, get_viewer_and_source(viewer, client) ->
+          Resolver.Destination.find(%{id: id}, viewer)
       end
     end
     field :token, type: :string do

@@ -118,7 +118,8 @@ defmodule EdmBackend.GraphQL.Schema do
         %{id: file_transfer_id, file_transfer: new_file_transfer}, get_viewer(viewer) ->
           case Resolver.FileTransfer.from_global_id(file_transfer_id) do
             {:ok, file_transfer} ->
-              case Resolver.FileTransfer.update(file_transfer, new_file_transfer, viewer) do
+              case Resolver.FileTransfer.update(
+                  file_transfer, new_file_transfer, viewer) do
                 {:ok, updated_file_transfer} ->
                   {:ok, %{file_transfer: updated_file_transfer}}
                 {:error, error} -> {:error, error}
@@ -144,7 +145,8 @@ defmodule EdmBackend.GraphQL.Schema do
 
           # The client id defaults to the current client if not set
           client_id = if not client_id do
-            {:ok, %{type: :client, id: id}} = Absinthe.Relay.Node.to_global_id(:client, viewer, EdmBackend.GraphQL.Schema)
+            {:ok, %{type: :client, id: id}} = Absinthe.Relay.Node.to_global_id(
+                :client, viewer, EdmBackend.GraphQL.Schema)
             id
           else
             client_id
