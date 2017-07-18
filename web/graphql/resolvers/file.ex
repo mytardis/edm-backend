@@ -7,7 +7,8 @@ defmodule EdmBackend.GraphQL.Resolver.File do
 
   def list(args, source, viewer) do
     if viewer |> can?(view(source)) do
-      {:ok, source |> File.get_file_query |> Relay.Connection.from_query(&Repo.all/1, args)}
+      {:ok, source |> File.get_file_query
+                   |> Relay.Connection.from_query(&Repo.all/1, args)}
     else
       {:error, "Unauthorised to view transfers for file"}
     end
@@ -46,7 +47,8 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   end
 
   def from_global_id(global_id, viewer \\ nil) do
-    case Absinthe.Relay.Node.from_global_id(global_id, EdmBackend.GraphQL.Schema) do
+    case Absinthe.Relay.Node.from_global_id(
+        global_id, EdmBackend.GraphQL.Schema) do
       {:ok, %{type: :file, id: id}} ->
         case viewer do
           nil ->
@@ -61,7 +63,8 @@ defmodule EdmBackend.GraphQL.Resolver.File do
   end
 
   def create_or_update(client, file, source_info, viewer) do
-    case EdmBackend.GraphQL.Resolver.Source.get_or_create(client, source_info, viewer) do
+    case EdmBackend.GraphQL.Resolver.Source.get_or_create(
+        client, source_info, viewer) do
       {:ok, source} ->
         case create_or_update(source, file, viewer) do
           {:ok, file} ->

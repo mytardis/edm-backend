@@ -45,7 +45,7 @@ defmodule EdmBackend.GraphQL.Schema do
         %{type: :group, id: id}, get_viewer(viewer) ->
           Resolver.Group.find(%{id: id}, viewer)
         %{type: :destination, id: id}, get_viewer(viewer) ->
-          Resolver.Destination.find(%{id: id}, viewer)
+          Resolver.Destination.from_global_id(%{id: id}, viewer)
         %{type: :file, id: id}, get_viewer(viewer) ->
           Resolver.File.find(%{id: id}, viewer)
         %{type: :file_transfer, id: id}, get_viewer(viewer) ->
@@ -70,7 +70,8 @@ defmodule EdmBackend.GraphQL.Schema do
         field :file, type: :file
       end
       resolve fn
-        %{client_id: client_id, source: source, file: file}, get_viewer(viewer) ->
+        %{client_id: client_id, source: source, file: file},
+        get_viewer(viewer) ->
           case Resolver.Client.from_global_id(client_id) do
             {:ok, client} ->
               Resolver.File.create_or_update(client, file, source, viewer)
@@ -115,12 +116,16 @@ defmodule EdmBackend.GraphQL.Schema do
         field :file_transfer, type: :file_transfer
       end
       resolve fn
-        %{id: file_transfer_id, file_transfer: new_file_transfer}, get_viewer(viewer) ->
+        %{id: file_transfer_id, file_transfer: new_file_transfer},
+        get_viewer(viewer) ->
           case Resolver.FileTransfer.from_global_id(file_transfer_id) do
             {:ok, file_transfer} ->
               case Resolver.FileTransfer.update(
                   file_transfer, new_file_transfer, viewer) do
                 {:ok, updated_file_transfer} ->
+#                  Logger.debug("updated file transfer with this information:"
+#                               <> "#{inspect(new_file_transfer)}\nResult:" <>
+#                               " #{inspect(updated_file_transfer)}")
                   {:ok, %{file_transfer: updated_file_transfer}}
                 {:error, error} -> {:error, error}
               end
@@ -214,6 +219,26 @@ defmodule EdmBackend.GraphQL.Schema do
           end
         _, _ ->
           {:error, @not_logged_in_error}
+      end
+    end
+
+    payload field :checkout_file_transfers do
+      input do
+        field :destination_id, :string
+        field :amount, :integer
+        field :status, :string
+      end
+      output do
+        field :file_transfers, list_of(:file_transfer)
+      end
+      resolve fn %{destination_id: destination_id,
+                   amount: amount},
+        get_viewer(viewer) ->
+          {:ok, destination} = Resolver.Destination.from_global_id(
+              destination_id, viewer)
+          {:ok, file_transfers} = Resolver.FileTransfer.checkout(
+              amount, destination, viewer)
+          {:ok, %{file_transfers: file_transfers}}
       end
     end
 

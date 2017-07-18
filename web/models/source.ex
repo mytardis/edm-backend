@@ -11,6 +11,10 @@ defmodule EdmBackend.Source do
     field :fstype, :string  # POSIX, NTFS
     field :settings, :map
 
+    field :basepath, :string, virtual: true
+    field :check_method, :string, virtual: true
+    field :cron_time, :string, virtual: true
+
     belongs_to :owner, Client
 
     has_many :files, File
@@ -22,8 +26,27 @@ defmodule EdmBackend.Source do
   @allowed ~w(name fstype settings)a
   @required ~w(name fstype)a
 
-  def changeset(source, params \\ %{}) do
+  @settings ~w(basepath check_method cron_time)a
+
+  def settings_to_db(source, params) do
+    {settings_params, _} = Map.split(params, @settings)
+    params = Map.put(params, :settings, Enum.reduce(
+      settings_params, Map.get(source.params, :settings, %{}), fn({k, v}, settings) ->
+        %{settings | k: v}
+      end))
+    cast(source, params, [:settings])
+  end
+
+  def settings_from_db(source) do
+    {defined_settings, _} = (for {key, val} <- source.settings, into: %{}, do:
+        {String.to_atom(key), val}) |> Map.split(@settings)
+    Map.merge(source, defined_settings)
+  end
+
+  def changeset(%Source{} = source, params \\ %{}) do
     source
+    |> cast(params, @settings)
+    |> settings_to_db(params)
     |> cast(params, @allowed)
     |> cast_assoc(:owner, required: true)
     |> validate_required(@required)
@@ -35,7 +58,7 @@ defmodule EdmBackend.Source do
   def all_sources(client) do
     query = from s in Source,
       where: s.owner_id == ^client.id
-    Repo.all(query)
+    Repo.all(query) |> Enum.map(fn(s) -> settings_from_db(s) end)
   end
 
   @doc """
@@ -48,7 +71,7 @@ defmodule EdmBackend.Source do
     case Repo.one(query) do
       nil -> {:error, "Source name #{name} not found"}
       source ->
-        {:ok, source}
+        {:ok, source |> settings_from_db}
     end
   end
 

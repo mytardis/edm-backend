@@ -59,6 +59,13 @@ defmodule EdmBackend.GraphQL.Types do
   node object :destination do
     field :base, :string  # path in destination
     field :name, :string
+    field :host_id, type: :string do
+      resolve fn _, %{source: destination} ->
+        host_id = Absinthe.Relay.Node.to_global_id(
+            :host, destination.host_id, EdmBackend.GraphQL.Schema)
+        {:ok, host_id}
+      end
+    end
     field :host, type: :host do
       resolve fn _, get_viewer_and_source(viewer, destination) ->
         Resolver.Host.find(%{destination: destination}, viewer)
@@ -68,7 +75,9 @@ defmodule EdmBackend.GraphQL.Types do
       arg :status, :string
       resolve fn args, get_viewer_and_source(viewer, destination) ->
         {status, pagination_args} = Map.pop(args, :status, nil)
-        Resolver.FileTransfer.list(pagination_args, status, destination, viewer)
+        {:ok, file_transfers} = Resolver.FileTransfer.list(
+            pagination_args, status, destination, viewer)
+        file_transfers
       end
     end
   end
@@ -77,6 +86,11 @@ defmodule EdmBackend.GraphQL.Types do
   node object :file_transfer do
     field :status, :string
     field :bytes_transferred, :integer
+    field :file, type: :file do
+      resolve fn _, get_viewer_and_source(viewer, file_transfer) ->
+        Resolver.FileTransfer.get_file(file_transfer, viewer)
+      end
+    end
     field :destination, type: :destination do
       resolve fn _, get_viewer_and_source(viewer, file_transfer) ->
         Resolver.Destination.find(%{file_transfer: file_transfer}, viewer)
@@ -100,7 +114,9 @@ defmodule EdmBackend.GraphQL.Types do
     field :birthtime, :datetime
     connection field :file_transfers, node_type: :file_transfer do
       resolve fn pagination_args, get_viewer_and_source(viewer, file) ->
-        Resolver.FileTransfer.list(pagination_args, file, viewer)
+        {:ok, file_transfers} = Resolver.FileTransfer.list(pagination_args,
+                                                           file, viewer)
+        file_transfers
       end
     end
   end
@@ -115,6 +131,9 @@ defmodule EdmBackend.GraphQL.Types do
     field :name, :string
     field :fstype, :string
     field :settings, :map
+    field :basepath, :string
+    field :check_method, :string
+    field :cron_time, :string
 
     connection field :files, node_type: :file do
       resolve fn pagination_args, get_viewer_and_source(viewer, source) ->
@@ -164,7 +183,7 @@ defmodule EdmBackend.GraphQL.Types do
     field :destination, type: :destination do
       arg :id, :string
       resolve fn %{id: id}, get_viewer_and_source(viewer, client) ->
-          Resolver.Destination.find(%{id: id}, viewer)
+          Resolver.Destination.from_global_id(id, viewer)
       end
     end
     field :token, type: :string do

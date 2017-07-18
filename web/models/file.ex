@@ -150,10 +150,18 @@ defmodule EdmBackend.File do
   return changes
   """
   def file_changes(file, file_info) do
-    keys = Map.keys(file_info)
+    # ignore atime
+    {_, _file_info} = Map.pop(file_info, :atime)
+    keys = Map.keys(_file_info)
     {db_file_info, _} = Map.split(file, keys)
     changes = Enum.reduce(keys, %{}, fn(key, changes) ->
-      if Map.get(db_file_info, key) != Map.get(file_info, key) do
+      equal = case Map.get(db_file_info, key) do
+                %DateTime{} = db_dt ->
+                  DateTime.compare(db_dt, Map.get(file_info, key)) == :eq
+                value ->
+                  value == Map.get(file_info, key)
+              end
+      if ! equal do
         changes = Map.put(changes, key, {Map.get(db_file_info, key),
                           Map.get(file_info, key)})
       end
@@ -210,6 +218,8 @@ defmodule EdmBackend.File do
   def update(%File{} = file, file_info) do
     file = case file_changes(file, file_info) do
              changes when map_size(changes) > 0 ->
+               Logger.debug("File #{inspect(file.filepath)} supposedly changed")
+               Logger.debug("Changes: #{inspect(changes)}")
                cancel_transfers(file)
                {:ok, file} = update_file(file, file_info)
                file
@@ -229,20 +239,21 @@ defmodule EdmBackend.File do
     existing_ft = file.file_transfers
     existing_destinations = Enum.map(existing_ft, fn(ft) ->
       if ft.status != "cancelled" do
-        ft.destination
+        ft.destination_id
       end
     end)
 
     file = file |> Repo.preload(:source)
     source = file.source |> Repo.preload(:destinations)
+    destination_ids = Enum.map(source.destinations, fn(dest) -> dest.id end)
     Enum.map(existing_ft, fn(ft) ->
-      if ! ft.destination in source.destinations do
+      if ! ft.destination in destination_ids do
         FileTransfer.cancel_transfer(ft)
       end
     end)
 
     Enum.map(source.destinations, fn(dest) ->
-      if ! dest in existing_destinations do
+      if ! dest.id in existing_destinations do
         create_file_transfer(file, dest)
       end
     end)

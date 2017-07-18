@@ -262,4 +262,25 @@ defmodule EdmBackend.FileTest do
       end)
   end
 
+  test "file_changes identifies whether files are changed or not", context do
+    timestamp = DateTime.utc_now()
+    {:ok, file} = %File{source: context[:source1]} |> File.changeset(
+      %{filepath: "/somewhere/file1",
+        size: 100,
+        mtime: timestamp,
+      }) |> Repo.insert
+    file_info_same = %{
+      mtime: timestamp,
+      filepath: "/somewhere/file1",
+      size: 100,
+    }
+    file_info_diff_size = %{
+      mtime: timestamp,
+      filepath: "/somewhere/file1",
+      size: 102,
+    }
+    assert File.file_changes(file, file_info_same) == %{}
+    assert File.file_changes(file, file_info_diff_size) == %{size: {100, 102}}
+  end
+
 end

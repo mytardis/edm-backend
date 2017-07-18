@@ -45,8 +45,7 @@ defmodule EdmBackend.Router do
   scope "/api/v1/" do
     pipe_through :api
 
-    forward "/graphql", Absinthe.Plug.GraphiQL, schema: EdmBackend.GraphQL.Schema
-
+    forward "/graphql", Absinthe.Plug, schema: EdmBackend.GraphQL.Schema
   end
 
 end

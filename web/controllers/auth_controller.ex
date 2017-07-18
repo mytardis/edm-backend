@@ -22,7 +22,8 @@ defmodule EdmBackend.AuthController do
   """
   def request(conn, params) do
     params = params |> Map.put("provider", get_default_provider())
-    conn |> redirect(to: auth_path(conn, :request, get_default_provider(), params))
+    conn |> redirect(to: auth_path(conn,
+                                   :request, get_default_provider(), params))
   end
 
   @doc """
@@ -57,7 +58,9 @@ defmodule EdmBackend.AuthController do
             conn |> json(%{error: reason})
         end
       else
-        conn |> json(%{error: "Unsupported response type; supported types are: " <> Enum.join(@supported_oauth_response_types, ", ")})
+        conn |> json(
+            %{error: "Unsupported response type; supported types are: " <>
+              Enum.join(@supported_oauth_response_types, ", ")})
       end
   end
 
@@ -66,7 +69,8 @@ defmodule EdmBackend.AuthController do
   missing parameters.
   """
   def api_request(conn, _) do
-    conn |> json(%{error: "client_id, redirect_uri and response_type are required"})
+    conn |> json(
+        %{error: "client_id, redirect_uri and response_type are required"})
   end
 
   @doc """
@@ -104,9 +108,9 @@ defmodule EdmBackend.AuthController do
     end
   end
 
-  # Renders a successful signin attempt, either by redirecting to the third-party
-  # app in the case of API authentication, or to the internal route for standard
-  # auth.
+  # Renders a successful signin attempt, either by redirecting to the
+  # third-party app in the case of API authentication, or to the internal route
+  # for standard auth.
   defp render_signing_success(conn, client, redirect \\ "/") do
     conn = conn |> fetch_flash
     {:ok, conn, jwt, oauth_params} = case get_session(conn, :signin_oauth2) do
@@ -121,9 +125,15 @@ defmodule EdmBackend.AuthController do
     case oauth_params do
       nil ->
         try do
-          conn
+          conn = conn
           |> Guardian.Plug.sign_in(client)
-          |> put_flash(:info, "Logged in as #{client.name}")
+          Logger.debug("Trying to find the token in here:")
+          Logger.debug(inspect(client))
+          Logger.debug(inspect(conn))
+          conn
+          |> put_flash(:info,
+              "Logged in as #{client.name}\n<br/>Token #{
+               conn.private.guardian_default_jwt}")
           |> redirect(to: redirect)
         rescue
           ArgumentError ->
@@ -148,19 +158,23 @@ defmodule EdmBackend.AuthController do
         end
       %{redirect_uri: redirect_uri, response_type: "token"} ->
         conn |> delete_session(:signin_oauth2)
-             |> redirect(external: redirect_uri <> "#error="<>URI.encode(reason))
+             |> redirect(external: redirect_uri <>
+                         "#error=" <> URI.encode(reason))
     end
   end
 
   # Performs an OAuth2 implicit auth redirect, where the token is encoded in the
   # URL fragment.
-  defp oauth_implicit_redirect(conn, %{redirect_uri: redirect_uri, state: state}, token) do
-    redirect_uri = redirect_uri <> "#access_token=" <> URI.encode(token) <> "&token_type=Bearer"
+  defp oauth_implicit_redirect(
+      conn, %{redirect_uri: redirect_uri, state: state}, token) do
+    redirect_uri = redirect_uri <> "#access_token=" <> URI.encode(token) <>
+        "&token_type=Bearer"
     case state do
       nil ->
         conn |> redirect(external: redirect_uri)
       _ ->
-        conn |> redirect(external: redirect_uri <> "&state=" <> URI.encode(state))
+        conn |> redirect(external: redirect_uri <> "&state=" <>
+            URI.encode(state))
     end
   end
 
