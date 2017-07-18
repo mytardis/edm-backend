@@ -1,0 +1,34 @@
+version: '2'
+services:
+  db:
+    image: percona:latest
+    # environment:
+    #     MYSQL_ROOT_PASSWORD: mysqltestpwd
+    volumes:
+      - /usr/local/var/mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - mytardis_default
+  web:
+    build: .
+    # working_dir: /code
+    command: bash -c '. local_mytardis_auth.sh'
+    #command: bash -c 'while true; do sleep 100; done'
+    volumes:
+      - .:/code
+    environment:
+      MIX_ENV: dev
+      DATABASE_URL: ecto://edm:edm_rocks@db/edm_backend_dev
+      DATABASE_ADAPTER: Elixir.Ecto.Adapters.MySQL
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - mytardis_default
+networks:
+  mytardis_default:
+    external: true
